@@ -1,4 +1,4 @@
-package com.github.zhensherlock.intellijplatformgitstatsplugin
+package com.huayi.intellijplatform.gitstats
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

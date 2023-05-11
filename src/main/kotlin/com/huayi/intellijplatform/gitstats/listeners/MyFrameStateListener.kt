@@ -1,4 +1,4 @@
-package com.github.zhensherlock.intellijplatformgitstatsplugin.listeners
+package com.huayi.intellijplatform.gitstats.listeners
 
 import com.intellij.ide.FrameStateListener
 import com.intellij.openapi.diagnostic.thisLogger

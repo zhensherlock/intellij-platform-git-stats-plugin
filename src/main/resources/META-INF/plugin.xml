@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.zhensherlock.intellijplatformgitstatsplugin</id>
-    <name>intellij-platform-git-stats-plugin Template</name>
+    <id>com.huayi.intellijplatform.gitstats</id>
+    <name>GitStats</name>
     <vendor>zhensherlock</vendor>
 
     <depends>com.intellij.modules.platform</depends>
@@ -9,10 +9,10 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.zhensherlock.intellijplatformgitstatsplugin.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="com.huayi.intellijplatform.gitstats.toolWindow.GitStatsWindowFactory" id="GitStats"/>
     </extensions>
 
     <applicationListeners>
-        <listener class="com.github.zhensherlock.intellijplatformgitstatsplugin.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
+        <listener class="com.huayi.intellijplatform.gitstats.listeners.MyFrameStateListener" topic="com.intellij.ide.FrameStateListener"/>
     </applicationListeners>
 </idea-plugin>
