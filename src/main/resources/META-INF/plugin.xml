@@ -9,7 +9,9 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.huayi.intellijplatform.gitstats.toolWindow.GitStatsWindowFactory" id="GitStats"/>
+<!--        <toolWindow secondary="true" anchor="right" icon="AllIcons.General.Modified" factoryClass="com.huayi.intellijplatform.gitstats.toolWindow.GitStatsWindowFactory" id="GitStats"/>-->
+        <toolWindow id="GitStats" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
+                    factoryClass="com.huayi.intellijplatform.gitstats.toolWindow.GitStatsWindowFactory"/>
     </extensions>
 
     <applicationListeners>
