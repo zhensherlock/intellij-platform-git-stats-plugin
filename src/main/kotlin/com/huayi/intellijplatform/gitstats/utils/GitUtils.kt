@@ -25,17 +25,24 @@ data class CommitFilesStats(
 )
 
 class GitUtil(private val repoPath: String) {
-    fun runCommand(cmd: List<String>, timeoutAmount: Long = 60L, timeUnit: TimeUnit = TimeUnit.SECONDS): Process? {
-        return runCatching {
-            ProcessBuilder(cmd)
-                .directory(File(repoPath))
-                .redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.PIPE)
-                .start().also { it.waitFor(timeoutAmount, timeUnit) }
-        }.onFailure { it.printStackTrace() }.getOrNull()
-    }
 
-    fun runCommand(vararg cmd: String): Process? = runCommand(listOf(*cmd))
+    fun getTopSpeedUserStats(
+        startDate: String, endDate: String, timeoutAmount: Long = 60L, timeUnit: TimeUnit = TimeUnit.SECONDS
+    ) {
+        val os = Utils.getOS()
+        val command = listOf(
+            if (os == "Windows") "cmd" else "/bin/sh",
+            if (os == "Windows") "/c" else "-c",
+            "git log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\\t\"; git log --author=\"\$name\" --pretty=tformat: --since==\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; loc += \$1 - \$2; file++ } END { printf \"added lines: %s, removed lines: %s, total lines: %s, modified files: %s\\n\", add, subs, loc, file }' -; done"
+        )
+        val process = Utils.runCommand(repoPath, command, timeoutAmount, timeUnit)
+//        val userStatsData = mutableMapOf<String, UserStats>()
+        process!!.inputStream.bufferedReader().use { reader ->
+            reader.forEachLine { line ->
+                println(line)
+            }
+        }
+    }
 
     fun getUserStats(
         startDate: String,
