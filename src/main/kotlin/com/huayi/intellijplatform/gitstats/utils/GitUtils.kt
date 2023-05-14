@@ -1,6 +1,5 @@
 package com.huayi.intellijplatform.gitstats.utils
 
-import java.io.File
 import java.util.concurrent.TimeUnit
 
 data class UserStats(
@@ -22,9 +21,7 @@ data class CommitStats(
 )
 
 data class CommitFilesStats(
-    var addedLines: Int = 0,
-    var deletedLines: Int = 0,
-    var fileName: String
+    var addedLines: Int = 0, var deletedLines: Int = 0, var fileName: String
 )
 
 class GitUtil(private val repoPath: String) {
@@ -48,13 +45,16 @@ class GitUtil(private val repoPath: String) {
         separator: String = "--"
     ): Array<UserStats> {
         val gitCommand = listOf(
-            "git", "log", "--numstat", "--date=iso",
+            "git",
+            "log",
+            "--numstat",
+            "--date=iso",
             "--pretty=format:${separator}%h${separator}%ad${separator}%aN",
-            "--since=${startDate}",
-            "--until=${endDate}"
+            "--since=$startDate",
+            "--until=$endDate"
         )
 
-        val process = runCommand(gitCommand, timeoutAmount, timeUnit)
+        val process = Utils.runCommand(repoPath, gitCommand, timeoutAmount, timeUnit)
 
 //        val processBuilder = ProcessBuilder(gitCommand)
 //            .directory(File(repoPath))

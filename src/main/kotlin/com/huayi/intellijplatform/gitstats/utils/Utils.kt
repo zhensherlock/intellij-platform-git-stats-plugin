@@ -1,11 +1,43 @@
 package com.huayi.intellijplatform.gitstats.utils
 
+import java.io.File
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 object Utils {
+    fun getOS(): String {
+        val os = System.getProperty("os.name").lowercase(Locale.getDefault())
+        return if (os.contains("win")) {
+            "Windows"
+        } else if (os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+            "Unix"
+        } else if (os.contains("mac")) {
+            "OSX"
+        } else {
+            "Unknown"
+        }
+    }
+
+    fun runCommand(
+        repoPath: String,
+        cmd: List<String>,
+        timeoutAmount: Long = 60L,
+        timeUnit: TimeUnit = TimeUnit.SECONDS
+    ): Process? {
+        return runCatching {
+            ProcessBuilder(cmd)
+                .directory(File(repoPath))
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                .start().also { it.waitFor(timeoutAmount, timeUnit) }
+        }.onFailure { it.printStackTrace() }.getOrNull()
+    }
+
+    fun runCommand(repoPath: String, vararg cmd: String): Process? = runCommand(repoPath, listOf(*cmd))
+
     fun getThisWeekDateRange(): Pair<LocalDate, LocalDate> {
         val now = LocalDate.now()
         val startOfWeek = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
