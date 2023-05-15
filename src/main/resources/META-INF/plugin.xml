@@ -2,15 +2,14 @@
 <idea-plugin>
     <id>com.huayi.intellijplatform.gitstats</id>
     <name>GitStats</name>
-    <vendor>zhensherlock</vendor>
+    <vendor>huayi</vendor>
 
     <depends>com.intellij.modules.platform</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-<!--        <toolWindow secondary="true" anchor="right" icon="AllIcons.General.Modified" factoryClass="com.huayi.intellijplatform.gitstats.toolWindow.GitStatsWindowFactory" id="GitStats"/>-->
-        <toolWindow id="GitStats" secondary="true" icon="AllIcons.Toolwindows.WebToolWindow" anchor="right"
+        <toolWindow id="Git Stats" secondary="true" icon="/META-INF/icon.svg" anchor="bottom"
                     factoryClass="com.huayi.intellijplatform.gitstats.toolWindow.GitStatsWindowFactory"/>
     </extensions>
 
