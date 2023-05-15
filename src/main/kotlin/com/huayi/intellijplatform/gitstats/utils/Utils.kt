@@ -1,5 +1,6 @@
 package com.huayi.intellijplatform.gitstats.utils
 
+import com.intellij.openapi.diagnostic.thisLogger
 import java.io.File
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -8,6 +9,14 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 object Utils {
+    fun checkDirectoryExists(directoryPath: String?): Boolean {
+        if (directoryPath.isNullOrEmpty()) {
+            return false
+        }
+        val directory = File(directoryPath)
+        return directory.exists() && directory.isDirectory
+    }
+
     fun getOS(): String {
         val os = System.getProperty("os.name").lowercase(Locale.getDefault())
         return if (os.contains("win")) {
@@ -33,7 +42,9 @@ object Utils {
                 .redirectErrorStream(true)
                 .redirectOutput(ProcessBuilder.Redirect.PIPE)
                 .start().also { it.waitFor(timeoutAmount, timeUnit) }
-        }.onFailure { it.printStackTrace() }.getOrNull()
+        }.onFailure {
+            thisLogger().info(it.printStackTrace().toString())
+        }.getOrNull()
     }
 
     fun runCommand(repoPath: String, vararg cmd: String): Process? = runCommand(repoPath, listOf(*cmd))

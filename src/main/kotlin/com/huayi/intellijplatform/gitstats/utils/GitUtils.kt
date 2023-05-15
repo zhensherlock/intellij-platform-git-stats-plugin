@@ -28,20 +28,20 @@ class GitUtil(private val repoPath: String) {
 
     fun getTopSpeedUserStats(
         startDate: String, endDate: String, timeoutAmount: Long = 60L, timeUnit: TimeUnit = TimeUnit.SECONDS
-    ) {
+    ): Array<UserStats> {
         val os = Utils.getOS()
         val command = listOf(
             if (os == "Windows") "cmd" else "/bin/sh",
             if (os == "Windows") "/c" else "-c",
-            "git log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\\t\"; git log --author=\"\$name\" --pretty=tformat: --since==\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; loc += \$1 - \$2; file++ } END { printf \"added lines: %s, removed lines: %s, total lines: %s, modified files: %s\\n\", add, subs, loc, file }' -; done"
+            "git log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=tformat: --since==\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
         )
         val process = Utils.runCommand(repoPath, command, timeoutAmount, timeUnit)
-//        val userStatsData = mutableMapOf<String, UserStats>()
-        process!!.inputStream.bufferedReader().use { reader ->
-            reader.forEachLine { line ->
-                println(line)
-            }
-        }
+        val regex = Regex("(.+)\\n+added lines: (\\d*), removed lines: (\\d+), modified files: (\\d+)")
+        return regex.findAll(process!!.inputStream.bufferedReader().readText())
+            .map { result ->
+                val (author, addedLines, deletedLines, modifiedFileCount) = result.destructured
+                UserStats(author, addedLines.toInt(), deletedLines.toInt(), modifiedFileCount.toInt())
+            }.sortedByDescending { it.addedLines }.toList().toTypedArray()
     }
 
     fun getUserStats(
@@ -62,12 +62,6 @@ class GitUtil(private val repoPath: String) {
         )
 
         val process = Utils.runCommand(repoPath, gitCommand, timeoutAmount, timeUnit)
-
-//        val processBuilder = ProcessBuilder(gitCommand)
-//            .directory(File(repoPath))
-//            .redirectErrorStream(true)
-//            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-//        val process = processBuilder.start().also { it.waitFor(timeoutAmount, timeUnit) }
 
         val userStatsData = mutableMapOf<String, UserStats>()
         process!!.inputStream.bufferedReader().use { reader ->

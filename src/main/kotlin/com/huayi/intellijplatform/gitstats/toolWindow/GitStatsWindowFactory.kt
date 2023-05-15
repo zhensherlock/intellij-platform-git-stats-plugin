@@ -129,8 +129,8 @@ class GitStatsWindowFactory : ToolWindowFactory {
                     addActionListener {
                         (contentPanel.layout as CardLayout).show(contentPanel, "content_loading")
                         thread {
-//                            service.getTopSpeedUserStats(startTime, endTime)
-                            table.model = service.getUserStats(startTime, endTime)
+                            table.model = service.getTopSpeedUserStats(startTime, endTime)
+//                            table.model = service.getUserStats(startTime, endTime)
                             SwingUtilities.invokeLater {
                                 (contentPanel.layout as CardLayout).show(contentPanel, "content_table")
                             }
@@ -140,12 +140,12 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 })
                 add(Box.createHorizontalGlue())
 //                add(IconButton(MyBundle.message("settingButtonTooltipText"), AllIcons.General.Settings))
-                add(IconLabelButton(AllIcons.General.Settings) {
-                    SettingDialogWrapper().showAndGet()
-                }.apply {
-                    toolTipText = MyBundle.message("settingButtonTooltipText")
-                })
-                add(JBBox.createHorizontalStrut(10))
+//                add(IconLabelButton(AllIcons.General.Settings) {
+//                    SettingDialogWrapper().showAndGet()
+//                }.apply {
+//                    toolTipText = MyBundle.message("settingButtonTooltipText")
+//                })
+//                add(JBBox.createHorizontalStrut(10))
             }
             add(headerPanel, BorderLayout.NORTH)
 
