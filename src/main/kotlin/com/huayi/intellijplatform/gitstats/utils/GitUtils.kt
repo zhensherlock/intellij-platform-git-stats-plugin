@@ -1,6 +1,8 @@
 package com.huayi.intellijplatform.gitstats.utils
 
+import git4idea.config.GitExecutableManager
 import java.util.concurrent.TimeUnit
+import com.intellij.openapi.project.Project
 
 data class UserStats(
     val author: String,
@@ -24,7 +26,15 @@ data class CommitFilesStats(
     var addedLines: Int = 0, var deletedLines: Int = 0, var fileName: String
 )
 
-class GitUtil(private val repoPath: String) {
+class GitUtils(project: Project) {
+    private val gitExecutablePath: String = GitExecutableManager.getInstance().getExecutable(project).exePath
+    private val basePath: String = project.basePath as String
+
+//    companion object {
+//        fun getGitExecutablePath(project: Project): String {
+//            return GitExecutableManager.getInstance().getExecutable(project).exePath
+//        }
+//    }
 
     fun getTopSpeedUserStats(
         startDate: String, endDate: String, timeoutAmount: Long = 60L, timeUnit: TimeUnit = TimeUnit.SECONDS
@@ -33,9 +43,9 @@ class GitUtil(private val repoPath: String) {
         val command = listOf(
             if (os == "Windows") "cmd" else "/bin/sh",
             if (os == "Windows") "/c" else "-c",
-            "git log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=tformat: --since==\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
+            "$gitExecutablePath log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=tformat: --since==\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
         )
-        val process = Utils.runCommand(repoPath, command, timeoutAmount, timeUnit)
+        val process = Utils.runCommand(basePath, command, timeoutAmount, timeUnit)
         val regex = Regex("(.+)\\n+added lines: (\\d*), removed lines: (\\d+), modified files: (\\d+)")
         return regex.findAll(process!!.inputStream.bufferedReader().readText())
             .map { result ->
@@ -61,7 +71,7 @@ class GitUtil(private val repoPath: String) {
             "--until=$endDate"
         )
 
-        val process = Utils.runCommand(repoPath, gitCommand, timeoutAmount, timeUnit)
+        val process = Utils.runCommand(basePath, gitCommand, timeoutAmount, timeUnit)
 
         val userStatsData = mutableMapOf<String, UserStats>()
         process!!.inputStream.bufferedReader().use { reader ->

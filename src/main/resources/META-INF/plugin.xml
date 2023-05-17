@@ -5,6 +5,9 @@
     <vendor>huayi</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.vcs</depends>
+    <depends>Git4Idea</depends>
+<!--    <depends optional="true" config-file="plugin-with-Git4Idea.xml">Git4Idea</depends>-->
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 

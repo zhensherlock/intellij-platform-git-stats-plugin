@@ -26,6 +26,7 @@ dependencies {
 //    implementation(libs.annotations)
 //    implementation("org.swinglabs:swingx:1.6.1")
 //    implementation("org.jfxtras:jfxtras-controls:17-r1")
+//    implementation("org.eclipse.jgit:org.eclipse.jgit:6.5.0.202303070854-r")
 }
 
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.

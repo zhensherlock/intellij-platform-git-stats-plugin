@@ -1,11 +1,9 @@
 package com.huayi.intellijplatform.gitstats.services
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.huayi.intellijplatform.gitstats.MyBundle
 import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableModel
-import com.huayi.intellijplatform.gitstats.utils.GitUtil
+import com.huayi.intellijplatform.gitstats.utils.GitUtils
 import com.huayi.intellijplatform.gitstats.utils.Utils
 import java.text.SimpleDateFormat
 import java.util.*
@@ -25,8 +23,8 @@ class GitStatsService(p: Project) {
         if (!Utils.checkDirectoryExists(project.basePath)) {
             return StatsTableModel(arrayOf(), arrayOf())
         }
-        val gitUtil = GitUtil(project.basePath as String)
-        val userStats = gitUtil.getUserStats(
+        val gitUtils = GitUtils(project)
+        val userStats = gitUtils.getUserStats(
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTime),
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(endTime)
         )
@@ -49,8 +47,8 @@ class GitStatsService(p: Project) {
         if (!Utils.checkDirectoryExists(project.basePath)) {
             return StatsTableModel(arrayOf(), arrayOf())
         }
-        val gitUtil = GitUtil(project.basePath as String)
-        val userStats = gitUtil.getTopSpeedUserStats(
+        val gitUtils = GitUtils(project)
+        val userStats = gitUtils.getTopSpeedUserStats(
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTime),
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(endTime)
         )
