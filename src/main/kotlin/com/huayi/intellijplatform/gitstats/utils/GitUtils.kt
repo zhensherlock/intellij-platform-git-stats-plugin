@@ -1,6 +1,7 @@
 package com.huayi.intellijplatform.gitstats.utils
 
 import git4idea.config.GitExecutableManager
+import git4idea.config.GitExecutableDetector
 import java.util.concurrent.TimeUnit
 import com.intellij.openapi.project.Project
 
@@ -29,7 +30,11 @@ data class CommitFilesStats(
 class GitUtils(project: Project) {
     private val gitExecutablePath: String = GitExecutableManager.getInstance().getExecutable(project).exePath
     private val basePath: String = project.basePath as String
+    private val gitBashExecutablePath: String? = GitExecutableDetector.getBashExecutablePath(gitExecutablePath)
 
+    init {
+        println(gitBashExecutablePath)
+    }
 //    companion object {
 //        fun getGitExecutablePath(project: Project): String {
 //            return GitExecutableManager.getInstance().getExecutable(project).exePath
@@ -41,9 +46,9 @@ class GitUtils(project: Project) {
     ): Array<UserStats> {
         val os = Utils.getOS()
         val command = listOf(
-            if (os == "Windows") "cmd" else "/bin/sh",
+            if (os == "Windows") gitBashExecutablePath ?: "cmd" else "/bin/sh",
             if (os == "Windows") "/c" else "-c",
-            "$gitExecutablePath log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=tformat: --since==\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
+            "$gitExecutablePath log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=\"tformat:\" --since=\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
         )
         val process = Utils.runCommand(basePath, command, timeoutAmount, timeUnit)
         val regex = Regex("(.+)\\n+added lines: (\\d*), removed lines: (\\d+), modified files: (\\d+)")
