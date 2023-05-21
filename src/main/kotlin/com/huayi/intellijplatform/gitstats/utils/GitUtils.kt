@@ -32,9 +32,8 @@ class GitUtils(project: Project) {
     private val basePath: String = project.basePath as String
     private val gitBashExecutablePath: String? = GitExecutableDetector.getBashExecutablePath(gitExecutablePath)
 
-    init {
-        println(gitBashExecutablePath)
-    }
+//    init {
+//    }
 //    companion object {
 //        fun getGitExecutablePath(project: Project): String {
 //            return GitExecutableManager.getInstance().getExecutable(project).exePath
@@ -45,12 +44,25 @@ class GitUtils(project: Project) {
         startDate: String, endDate: String, timeoutAmount: Long = 60L, timeUnit: TimeUnit = TimeUnit.SECONDS
     ): Array<UserStats> {
         val os = Utils.getOS()
-        val command = listOf(
-            if (os == "Windows") gitBashExecutablePath ?: "cmd" else "/bin/sh",
-            if (os == "Windows") "/c" else "-c",
-            "$gitExecutablePath log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=\"tformat:\" --since=\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
-        )
-        val process = Utils.runCommand(basePath, command, timeoutAmount, timeUnit)
+        val commands = mutableListOf<String>()
+        when {
+            os == "Windows" && gitBashExecutablePath?.isNotEmpty() ?: false -> {
+                commands += gitBashExecutablePath!!
+                commands += "-c"
+                commands += "git log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\\\"\$name\\\" --pretty=tformat: --since=\\\"${startDate}\\\" --until=\\\"${endDate}\\\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf(\\\"added lines: %s, removed lines: %s, modified files: %s\\n\\\", add ? add : 0, subs ? subs : 0, file ? file : 0) }' -; done"
+            }
+            os == "Windows" && gitBashExecutablePath?.isEmpty() ?: false -> {
+                commands += "powershell"
+                commands += "/c"
+//                commands += "C:\\\"Program Files\"\\Git\\cmd\\git.exe log --format='%aN' | sort -u | % { $name=$_; Write-Output $name; git log --author=$name --pretty=tformat: --since='2023-05-15 00:00:00' --until='2023-05-21 23:59:59' --numstat | ? { $_ -match '\\d' } | % { $add += [int]$_.Split()[0]; $subs += [int]$_.Split()[1]; $files++ } ; Write-Output ( 'added lines: ' + $add + ', removed lines: ' + $subs + ', modified files: ' + $files ) }"
+            }
+            else -> {
+                commands += "/bin/sh"
+                commands += "-c"
+                commands += "$gitExecutablePath log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=\"tformat:\" --since=\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
+            }
+        }
+        val process = Utils.runCommand(basePath, commands, timeoutAmount, timeUnit)
         val regex = Regex("(.+)\\n+added lines: (\\d*), removed lines: (\\d+), modified files: (\\d+)")
         return regex.findAll(process!!.inputStream.bufferedReader().readText())
             .map { result ->
