@@ -1,4 +1,4 @@
-<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
     <defs>
         <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
             <stop stop-color="#765AF8" offset="0"/>
@@ -7,15 +7,14 @@
     </defs>
     <g>
         <rect fill="url(#gradient)"
-              x="0" y="0" width="40" height="40"
-              rx="3" ry="3"/>
-        <text x="5" y="19"
+              x="0" y="0" width="30" height="30"
+              rx="100" ry="100"/>
+        <text x="3" y="21"
               font-family="Arial, Helvetica, sans-serif"
-              font-size="15px"
-              letter-spacing="1"
+              font-size="16px"
+              letter-spacing="0"
               fill="#FFFFFF">
             <tspan>GS</tspan>
-            <tspan x="6" y="28">_</tspan>
         </text>
     </g>
 </svg>
