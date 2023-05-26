@@ -1,14 +1,14 @@
 package com.huayi.intellijplatform.gitstats.toolWindow
 
 import com.huayi.intellijplatform.gitstats.MyBundle
-import com.huayi.intellijplatform.gitstats.components.SettingDialogWrapper
+import com.huayi.intellijplatform.gitstats.components.SettingAction
 import com.huayi.intellijplatform.gitstats.services.GitStatsService
 import com.huayi.intellijplatform.gitstats.utils.Utils
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.popup.IconButton
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.*
@@ -26,9 +26,9 @@ import kotlin.concurrent.thread
 
 class GitStatsWindowFactory : ToolWindowFactory {
 
-    init {
-        thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
-    }
+//    init {
+//        thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
+//    }
 
     private val contentFactory = ContentFactory.SERVICE.getInstance()
 
@@ -46,6 +46,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
 
         fun getContent(toolWindow: ToolWindow) = JBPanel<JBPanel<*>>(BorderLayout()).apply {
             var (startTime, endTime) = Utils.getThisWeekDateTimeRange()
+            var defaultMode = "Top-speed"
             val table = JBTable().apply {
                 font = Font("Arial", Font.PLAIN, 14)
                 tableHeader.font = Font("Arial", Font.BOLD, 14)
@@ -55,6 +56,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 rowHeight = 30
                 setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
             }
+            var refreshButton: JButton
             border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
 
             val contentPanel = JBPanel<JBPanel<*>>().apply {
@@ -125,21 +127,29 @@ class GitStatsWindowFactory : ToolWindowFactory {
                         }
                     }
                 })
-                add(JButton(MyBundle.message("refreshButtonLabel")).apply {
+//                add(LoadingButton(MyBundle.message("refreshButtonLabel")))
+                refreshButton = JButton(MyBundle.message("refreshButtonLabel"), AllIcons.Actions.Refresh).apply {
                     addActionListener {
                         (contentPanel.layout as CardLayout).show(contentPanel, "content_loading")
+                        isEnabled = false
+                        text = MyBundle.message("refreshButtonLoadingLabel")
                         thread {
-                            table.model = service.getTopSpeedUserStats(startTime, endTime)
-//                            table.model = service.getUserStats(startTime, endTime)
+                            if (defaultMode === "Top-speed") {
+                                table.model = service.getTopSpeedUserStats(startTime, endTime)
+                            } else {
+                                table.model = service.getUserStats(startTime, endTime)
+                            }
                             SwingUtilities.invokeLater {
                                 (contentPanel.layout as CardLayout).show(contentPanel, "content_table")
+                                isEnabled = true
+                                text = MyBundle.message("refreshButtonLabel")
                             }
                         }
                     }
                     doClick()
-                })
+                }
+                add(refreshButton)
                 add(Box.createHorizontalGlue())
-//                add(IconButton(MyBundle.message("settingButtonTooltipText"), AllIcons.General.Settings))
 //                add(IconLabelButton(AllIcons.General.Settings) {
 //                    SettingDialogWrapper().showAndGet()
 //                }.apply {
@@ -150,6 +160,15 @@ class GitStatsWindowFactory : ToolWindowFactory {
             add(headerPanel, BorderLayout.NORTH)
 
             add(contentPanel, BorderLayout.CENTER)
+
+            val actionList: MutableList<AnAction> = ArrayList()
+            val settingAction =
+                SettingAction(MyBundle.message("settingButtonTooltipText"), defaultMode) { selectedMode ->
+                    defaultMode = selectedMode
+                    refreshButton.doClick()
+                }
+            actionList.add(settingAction)
+            toolWindow.setTitleActions(actionList)
         }
     }
 }

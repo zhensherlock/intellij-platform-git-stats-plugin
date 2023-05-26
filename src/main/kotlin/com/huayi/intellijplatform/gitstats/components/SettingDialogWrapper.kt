@@ -11,7 +11,9 @@ import javax.swing.BoxLayout
 import javax.swing.JComponent
 
 
-class SettingDialogWrapper : DialogWrapper(true) {
+class SettingDialogWrapper(defaultMode: String) : DialogWrapper(true) {
+    var selectedMode: String = defaultMode
+    private lateinit var modeComboBox: ComboBox<String>
     init {
         title = "Git Stats Setting"
         init()
@@ -26,12 +28,19 @@ class SettingDialogWrapper : DialogWrapper(true) {
             add(JBLabel(MyBundle.message("settingDialogModeLabel", "")).apply {
                 preferredSize = Dimension(50, 30)
             })
-            add(ComboBox<String>().apply {
+            modeComboBox = ComboBox<String>().apply {
                 addItem("Top-speed")
                 addItem("Advanced")
-            })
+                selectedItem = selectedMode
+            }
+            add(modeComboBox)
         }
         dialogPanel.add(modeFieldPanel)
         return dialogPanel
+    }
+
+    override fun doOKAction() {
+        selectedMode = modeComboBox.selectedItem as String
+        super.doOKAction()
     }
 }
