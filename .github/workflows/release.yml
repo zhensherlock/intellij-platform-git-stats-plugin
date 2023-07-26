@@ -86,6 +86,7 @@ jobs:
           git push --set-upstream origin $BRANCH
           
           gh label create "$LABEL" \
+            --force \
             --description "Pull requests with release changelog update" \
             || true
 
