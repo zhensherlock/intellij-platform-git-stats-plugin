@@ -46,7 +46,7 @@ jobs:
 
       # Validate wrapper
       - name: Gradle Wrapper Validation
-        uses: gradle/wrapper-validation-action@v1.0.6
+        uses: gradle/wrapper-validation-action@v1.1.0
 
       # Setup Java environment for the next steps
       - name: Setup Java
@@ -115,7 +115,7 @@ jobs:
 
       # Run Qodana inspections
       - name: Qodana - Code Inspection
-        uses: JetBrains/qodana-action@v2023.1.4
+        uses: JetBrains/qodana-action@v2023.2.1
 
       # Prepare plugin archive content for creating artifact
       - name: Prepare Plugin Artifact
