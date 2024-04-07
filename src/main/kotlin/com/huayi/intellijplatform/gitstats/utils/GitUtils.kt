@@ -30,6 +30,7 @@ data class CommitFilesStats(
 class GitUtils(project: Project) {
     private val gitExecutablePath: String = GitExecutableManager.getInstance().getExecutable(project).exePath
     private val basePath: String = project.basePath as String
+//    private val basePath: String = "/Users/sunzhenxuan/work/qcc/code/qcc_pro/pro-front"
     private val gitBashExecutablePath: String? = GitExecutableDetector.getBashExecutablePath(gitExecutablePath)
 
 //    init {
