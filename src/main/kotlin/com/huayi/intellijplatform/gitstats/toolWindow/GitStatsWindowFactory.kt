@@ -48,8 +48,8 @@ class GitStatsWindowFactory : ToolWindowFactory {
             var (startTime, endTime) = Utils.getThisWeekDateTimeRange()
             var defaultMode = "Top-speed"
             val table = JBTable().apply {
-                font = Font("Arial", Font.PLAIN, 14)
-                tableHeader.font = Font("Arial", Font.BOLD, 14)
+                font = Font("Microsoft YaHei", Font.PLAIN, 14)
+                tableHeader.font = Font("Microsoft YaHei", Font.BOLD, 14)
                 border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
                 columnSelectionAllowed = false
                 rowSelectionAllowed = true
