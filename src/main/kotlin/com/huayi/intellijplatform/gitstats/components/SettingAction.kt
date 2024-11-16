@@ -1,24 +1,25 @@
 package com.huayi.intellijplatform.gitstats.components
 
+import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.annotations.Nls
 import java.util.function.Supplier
 
-class SettingAction(text: @Nls String, defaultMode: String, private val onSelectedModeChanged: (String) -> Unit) :
+class SettingAction(text: @Nls String, defaultSettingModel: SettingModel, private val onSettingChanged: (SettingModel) -> Unit) :
     DumbAwareAction(Supplier { text }, AllIcons.General.Settings) {
-    private var selectedMode: String = defaultMode
+    private var settingModel: SettingModel = defaultSettingModel
         set(value) {
             field = value
-            onSelectedModeChanged.invoke(value)
+            onSettingChanged.invoke(value)
         }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val dialogWrapper = SettingDialogWrapper(selectedMode)
+        val dialogWrapper = SettingDialogWrapper(settingModel)
         dialogWrapper.showAndGet()
         if (dialogWrapper.isOK) {
-            selectedMode = dialogWrapper.selectedMode
+            settingModel = dialogWrapper.settingModel
         }
     }
 }
