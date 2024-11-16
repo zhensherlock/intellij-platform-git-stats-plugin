@@ -4,6 +4,7 @@ import git4idea.config.GitExecutableManager
 import git4idea.config.GitExecutableDetector
 import java.util.concurrent.TimeUnit
 import com.intellij.openapi.project.Project
+import com.huayi.intellijplatform.gitstats.models.SettingModel
 
 data class UserStats(
     val author: String,
@@ -29,8 +30,8 @@ data class CommitFilesStats(
 
 class GitUtils(project: Project) {
     private val gitExecutablePath: String = GitExecutableManager.getInstance().getExecutable(project).exePath
-    private val basePath: String = project.basePath as String
-//    private val basePath: String = "/Users/sunzhenxuan/work/qcc/code/qcc_pro/pro-front"
+//    private val basePath: String = project.basePath as String
+    private val basePath: String = "/Users/sunzhenxuan/work/qcc/code/qcc_pro/pro-front"
     private val gitBashExecutablePath: String? = GitExecutableDetector.getBashExecutablePath(gitExecutablePath)
 
 //    init {
@@ -42,15 +43,18 @@ class GitUtils(project: Project) {
 //    }
 
     fun getTopSpeedUserStats(
-        startDate: String, endDate: String, timeoutAmount: Long = 60L, timeUnit: TimeUnit = TimeUnit.SECONDS
+        startDate: String, endDate: String, settingModel: SettingModel
     ): Array<UserStats> {
+        val timeoutAmount = 60L
+        val timeUnit = TimeUnit.SECONDS
         val os = Utils.getOS()
         val commands = mutableListOf<String>()
+        val folder = if (settingModel.exclude.isEmpty()) "." else ". ':(exclude)${settingModel.exclude}'"
         when {
             os == "Windows" && gitBashExecutablePath?.isNotEmpty() ?: false -> {
                 commands += gitBashExecutablePath!!
                 commands += "-c"
-                commands += "git log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\\\"\$name\\\" --pretty=tformat: --since=\\\"${startDate}\\\" --until=\\\"${endDate}\\\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf(\\\"added lines: %s, removed lines: %s, modified files: %s\\n\\\", add ? add : 0, subs ? subs : 0, file ? file : 0) }' -; done"
+                commands += "git log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\\\"\$name\\\" --pretty=tformat: --since=\\\"${startDate}\\\" --until=\\\"${endDate}\\\" --numstat -- $folder | awk '{ add += \$1; subs += \$2; file++ } END { printf(\\\"added lines: %s, removed lines: %s, modified files: %s\\n\\\", add ? add : 0, subs ? subs : 0, file ? file : 0) }' -; done"
             }
             os == "Windows" && gitBashExecutablePath?.isEmpty() ?: false -> {
                 commands += "powershell"
@@ -60,7 +64,7 @@ class GitUtils(project: Project) {
             else -> {
                 commands += "/bin/sh"
                 commands += "-c"
-                commands += "$gitExecutablePath log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=\"tformat:\" --since=\"$startDate\" --until=\"$endDate\" --numstat | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
+                commands += "$gitExecutablePath log --format=\"%aN\" | sort -u | while read name; do echo \"\$name\"; git log --author=\"\$name\" --pretty=\"tformat:\" --since=\"$startDate\" --until=\"$endDate\" --numstat -- $folder | awk '{ add += \$1; subs += \$2; file++ } END { printf \"added lines: %s, removed lines: %s, modified files: %s\\n\", add ? add : 0, subs ? subs : 0, file ? file : 0 }' -; done"
             }
         }
         val process = Utils.runCommand(basePath, commands, timeoutAmount, timeUnit)
@@ -75,21 +79,25 @@ class GitUtils(project: Project) {
     fun getUserStats(
         startDate: String,
         endDate: String,
-        timeoutAmount: Long = 60L,
-        timeUnit: TimeUnit = TimeUnit.SECONDS,
-        separator: String = "--"
+        settingModel: SettingModel
     ): Array<UserStats> {
-        val gitCommand = listOf(
-            "git",
-            "log",
-            "--numstat",
-            "--date=iso",
-            "--pretty=format:${separator}%h${separator}%ad${separator}%aN",
-            "--since=$startDate",
-            "--until=$endDate"
-        )
+        val timeoutAmount = 60L
+        val timeUnit = TimeUnit.SECONDS
+        val separator = "--"
+        val os = Utils.getOS()
+        val commands = mutableListOf<String>()
+        val folder = if (settingModel.exclude.isEmpty()) "." else ". ':(exclude)${settingModel.exclude}'"
+        if (os == "Windows" && gitBashExecutablePath?.isNotEmpty() == true) {
+            commands += gitBashExecutablePath
+            commands += "-c"
+            commands += "git log --numstat --pretty=\"format:${separator}%h${separator}%ad${separator}%aN\" --since=\\\"${startDate}\\\" --until=\\\"${endDate}\\\" -- $folder"
+        } else {
+            commands += "/bin/sh"
+            commands += "-c"
+            commands += "$gitExecutablePath log --numstat --pretty=\"format:${separator}%h${separator}%ad${separator}%aN\" --since=\"$startDate\" --until=\"$endDate\" -- $folder"
+        }
 
-        val process = Utils.runCommand(basePath, gitCommand, timeoutAmount, timeUnit)
+        val process = Utils.runCommand(basePath, commands, timeoutAmount, timeUnit)
 
         val userStatsData = mutableMapOf<String, UserStats>()
         process!!.inputStream.bufferedReader().use { reader ->

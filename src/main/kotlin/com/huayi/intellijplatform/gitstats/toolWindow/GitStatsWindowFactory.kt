@@ -2,6 +2,7 @@ package com.huayi.intellijplatform.gitstats.toolWindow
 
 import com.huayi.intellijplatform.gitstats.MyBundle
 import com.huayi.intellijplatform.gitstats.components.SettingAction
+import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.huayi.intellijplatform.gitstats.services.GitStatsService
 import com.huayi.intellijplatform.gitstats.utils.Utils
 import com.intellij.icons.AllIcons
@@ -46,7 +47,10 @@ class GitStatsWindowFactory : ToolWindowFactory {
 
         fun getContent(toolWindow: ToolWindow) = JBPanel<JBPanel<*>>(BorderLayout()).apply {
             var (startTime, endTime) = Utils.getThisWeekDateTimeRange()
-            var defaultMode = "Top-speed"
+            val settingModel = SettingModel().apply {
+                mode = "Top-speed"
+                exclude = ""
+            }
             val table = JBTable().apply {
                 font = Font("Microsoft YaHei", Font.PLAIN, 14)
                 tableHeader.font = Font("Microsoft YaHei", Font.BOLD, 14)
@@ -134,10 +138,10 @@ class GitStatsWindowFactory : ToolWindowFactory {
                         isEnabled = false
                         text = MyBundle.message("refreshButtonLoadingLabel")
                         thread {
-                            if (defaultMode === "Top-speed") {
-                                table.model = service.getTopSpeedUserStats(startTime, endTime)
+                            if (settingModel.mode === "Top-speed") {
+                                table.model = service.getTopSpeedUserStats(startTime, endTime, settingModel)
                             } else {
-                                table.model = service.getUserStats(startTime, endTime)
+                                table.model = service.getUserStats(startTime, endTime, settingModel)
                             }
                             SwingUtilities.invokeLater {
                                 (contentPanel.layout as CardLayout).show(contentPanel, "content_table")
@@ -163,8 +167,9 @@ class GitStatsWindowFactory : ToolWindowFactory {
 
             val actionList: MutableList<AnAction> = ArrayList()
             val settingAction =
-                SettingAction(MyBundle.message("settingButtonTooltipText"), defaultMode) { selectedMode ->
-                    defaultMode = selectedMode
+                SettingAction(MyBundle.message("settingButtonTooltipText"), settingModel) { value ->
+                    settingModel.mode = value.mode
+                    settingModel.exclude = value.exclude
                     refreshButton.doClick()
                 }
             actionList.add(settingAction)

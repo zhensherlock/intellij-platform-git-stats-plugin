@@ -1,5 +1,6 @@
 package com.huayi.intellijplatform.gitstats.services
 
+import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableModel
@@ -19,14 +20,15 @@ class GitStatsService(p: Project) {
 
 //    fun getRandomNumber() = (1..100).random()
 
-    fun getUserStats(startTime: Date, endTime: Date): StatsTableModel {
+    fun getUserStats(startTime: Date, endTime: Date, settingModel: SettingModel): StatsTableModel {
         if (!Utils.checkDirectoryExists(project.basePath)) {
             return StatsTableModel(arrayOf(), arrayOf())
         }
         val gitUtils = GitUtils(project)
         val userStats = gitUtils.getUserStats(
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTime),
-            SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(endTime)
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(endTime),
+            settingModel
         )
         val data = userStats.map { item ->
             arrayOf(
@@ -43,14 +45,15 @@ class GitStatsService(p: Project) {
         )
     }
 
-    fun getTopSpeedUserStats(startTime: Date, endTime: Date): StatsTableModel {
+    fun getTopSpeedUserStats(startTime: Date, endTime: Date, settingModel: SettingModel): StatsTableModel {
         if (!Utils.checkDirectoryExists(project.basePath)) {
             return StatsTableModel(arrayOf(), arrayOf())
         }
         val gitUtils = GitUtils(project)
         val userStats = gitUtils.getTopSpeedUserStats(
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTime),
-            SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(endTime)
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(endTime),
+            settingModel
         )
         val data = userStats.map { item ->
             arrayOf(
