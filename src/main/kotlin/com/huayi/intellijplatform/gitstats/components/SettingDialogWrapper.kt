@@ -29,7 +29,7 @@ class SettingDialogWrapper(defaultSettingModel: SettingModel) : DialogWrapper(tr
         val modeFieldPanel = JBPanel<JBPanel<*>>().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
             add(JBLabel(MyBundle.message("settingDialogModeLabel", "")).apply {
-                preferredSize = Dimension(50, 30)
+                preferredSize = Dimension(60, 30)
             })
             modeComboBox = ComboBox<String>().apply {
                 addItem("Top-speed")
@@ -43,7 +43,7 @@ class SettingDialogWrapper(defaultSettingModel: SettingModel) : DialogWrapper(tr
         val excludeFieldPanel = JBPanel<JBPanel<*>>().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
             add(JBLabel(MyBundle.message("settingDialogExcludeLabel", "")).apply {
-                preferredSize = Dimension(50, 30)
+                preferredSize = Dimension(60, 30)
             })
             excludeField = JBTextField().apply {
                 text = settingModel.exclude
