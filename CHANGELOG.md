@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+## [0.6.1] - 2024-11-19
+
+**2024.11.19**
+
+- 🐛 Fixed error basePath
+- 🐛 Fixed label width
+
 ## [0.6.0] - 2024-11-17
 
 **2024.11.17**
@@ -36,7 +43,8 @@
 
 - Displays the code statistics table
 
-[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.0.2...v0.4.0
