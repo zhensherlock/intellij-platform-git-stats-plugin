@@ -1,3 +1,34 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=zhensherlock&project=intellij-platform-git-stats-plugin&lang=id">Bahasa Indonesia</a>
+      </div>
+    </div>
+  </details>
+</div>
+
 # intellij-platform-git-stats-plugin
 
 ![Build](https://github.com/zhensherlock/intellij-platform-git-stats-plugin/workflows/Build/badge.svg)
