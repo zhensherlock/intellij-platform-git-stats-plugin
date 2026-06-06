@@ -4,6 +4,18 @@
 
 ## [Unreleased]
 
+- ✨ Migrate to IntelliJ Platform Gradle Plugin 2.x
+- ✨ Update the build baseline to Java 21 and IntelliJ Platform 2024.2
+- ✨ Support IDE builds from 242 through 261
+- 🧹 Modernize GitHub Actions, Gradle Wrapper, and run configurations
+- 🧹 Remove obsolete Qodana, Kover, and UI test template scaffolding
+
+## [0.6.2] - 2025-05-13
+
+**2025.05.13**
+
+- ✨ Support 2025.1
+
 ## [0.6.1] - 2024-11-19
 
 **2024.11.19**
@@ -43,7 +55,8 @@
 
 - Displays the code statistics table
 
-[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.4.0...v0.5.0

@@ -9,6 +9,9 @@ private const val BUNDLE = "messages.MyBundle"
 
 object MyBundle : DynamicBundle(BUNDLE) {
 
+    operator fun get(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
+        getMessage(key, *params)
+
     @Suppress("SpreadOperator")
     @JvmStatic
     fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =

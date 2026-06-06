@@ -15,10 +15,7 @@ class GitStatsService(p: Project) {
 
     init {
         project = p
-//        thisLogger().info(MyBundle.message("projectService", project.name))
     }
-
-//    fun getRandomNumber() = (1..100).random()
 
     fun getUserStats(startTime: Date, endTime: Date, settingModel: SettingModel): StatsTableModel {
         if (!Utils.checkDirectoryExists(project.basePath)) {
