@@ -1,26 +1,25 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run Qodana" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="Run Tests" type="GradleRunConfiguration" factoryName="Gradle">
+    <log_file alias="IDE logs" path="$PROJECT_DIR$/.intellijPlatform/sandbox/*/*/log-test/idea.log" show_all="true" />
     <ExternalSystemSettings>
-      <option name="env">
-        <map>
-          <entry key="QODANA_SHOW_REPORT" value="true" />
-        </map>
-      </option>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="cleanInspections runInspections" />
+      <option name="scriptParameters" value="" />
       <option name="taskDescriptions">
         <list />
       </option>
       <option name="taskNames">
-        <list />
+        <list>
+          <option value="check" />
+        </list>
       </option>
-      <option name="vmOptions" />
+      <option name="vmOptions" value="" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
+    <RunAsTest>true</RunAsTest>
     <method v="2" />
   </configuration>
 </component>

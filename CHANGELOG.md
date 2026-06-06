@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+- ✨ Migrate to IntelliJ Platform Gradle Plugin 2.x
+- ✨ Update the build baseline to Java 21 and IntelliJ Platform 2024.2
+- ✨ Support IDE builds from 242 through 261
+- 🧹 Modernize GitHub Actions, Gradle Wrapper, and run configurations
+- 🧹 Remove obsolete Qodana, Kover, and UI test template scaffolding
+
 ## [0.6.2] - 2025-05-13
 
 **2025.05.13**
