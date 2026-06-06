@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-06-06
+
 - ✨ Migrate to IntelliJ Platform Gradle Plugin 2.x
 - ✨ Update the build baseline to Java 21 and IntelliJ Platform 2024.2
 - ✨ Support IDE builds from 242 through 261
@@ -55,12 +57,13 @@
 
 - Displays the code statistics table
 
-[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.2...HEAD
-[0.6.2]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.1...v0.6.2
-[0.6.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.6.0...v0.6.1
-[0.6.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.0.2...v0.4.0
-[0.0.2]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.0.1...v0.0.2
-[0.0.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/commits/v0.0.1
+[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.2...0.7.0
+[0.6.2]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.1...0.6.2
+[0.6.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.0...0.6.1
+[0.6.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.5.0...0.6.0
+[0.5.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.4.0...0.5.0
+[0.4.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.0.2...0.4.0
+[0.0.2]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.0.1...0.0.2
+[0.0.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/commits/0.0.1
 [//]: #
