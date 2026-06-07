@@ -3,8 +3,12 @@ package com.huayi.intellijplatform.gitstats
 import com.huayi.intellijplatform.gitstats.components.RefreshButton
 import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.huayi.intellijplatform.gitstats.services.GitStatsSettingsService
+import com.huayi.intellijplatform.gitstats.services.GitStatsResult
+import com.huayi.intellijplatform.gitstats.services.GitStatsService
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import java.io.File
+import java.util.Calendar
 import javax.swing.SwingUtilities
 
 class MyPluginTest : BasePlatformTestCase() {
@@ -66,6 +70,34 @@ class MyPluginTest : BasePlatformTestCase() {
         assertNotNull(project.service<GitStatsSettingsService>())
     }
 
+    fun testGitStatsServiceReturnsFailureForNonGitProject() {
+        projectDirectory().mkdirs()
+
+        val result = project.service<GitStatsService>().getTopSpeedUserStats(
+            dateOf(2026, Calendar.JUNE, 1),
+            dateOf(2026, Calendar.JUNE, 7),
+            SettingModel()
+        )
+
+        assertTrue(result is GitStatsResult.Failure)
+        assertEquals(MyBundle.message("stateNotGitRepositoryTitle"), (result as GitStatsResult.Failure).title)
+    }
+
+    fun testGitStatsServiceReturnsEmptyForGitProjectWithoutCommits() {
+        projectDirectory().mkdirs()
+        runGit("init")
+
+        val result = project.service<GitStatsService>().getTopSpeedUserStats(
+            dateOf(2026, Calendar.JUNE, 1),
+            dateOf(2026, Calendar.JUNE, 7),
+            SettingModel()
+        )
+
+        assertTrue(result is GitStatsResult.Empty)
+        assertEquals(MyBundle.message("stateNoDataTitle"), (result as GitStatsResult.Empty).title)
+        assertEquals(MyBundle.message("stateNoDataMessage"), result.message)
+    }
+
     fun testRefreshButtonCanEnterLoadingStateDuringInitialization() = runOnEdt {
         val button = RefreshButton("Refresh", "Refreshing...")
 
@@ -87,5 +119,28 @@ class MyPluginTest : BasePlatformTestCase() {
         } else {
             SwingUtilities.invokeAndWait(action)
         }
+    }
+
+    private fun dateOf(year: Int, month: Int, day: Int) = Calendar.getInstance().apply {
+        clear()
+        set(year, month, day)
+    }.time
+
+    private fun runGit(vararg args: String) {
+        val command = listOf(gitExecutable()) + args
+        val process = ProcessBuilder(command)
+            .directory(projectDirectory())
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().readText()
+        assertEquals(output, 0, process.waitFor())
+    }
+
+    private fun projectDirectory() = File(project.basePath!!)
+
+    private fun gitExecutable(): String {
+        return listOf("/usr/bin/git", "/opt/homebrew/bin/git")
+            .firstOrNull { File(it).canExecute() }
+            ?: "git"
     }
 }

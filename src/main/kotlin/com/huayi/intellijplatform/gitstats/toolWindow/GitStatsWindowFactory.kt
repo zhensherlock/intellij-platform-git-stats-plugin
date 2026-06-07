@@ -100,6 +100,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
             }
 
             fun showState(title: String, message: String) {
+                table.model = StatsTableModel(arrayOf(), arrayOf())
                 stateTitleLabel.text = title
                 stateMessageLabel.text = htmlCenter(message)
                 contentLayout.show(contentPanel, CONTENT_STATE)

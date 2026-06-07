@@ -73,6 +73,9 @@ class GitUtils(project: Project) {
             settingModel
         )
         val commandResult = Utils.runCommand(basePath, command, timeoutAmount, timeUnit)
+        if (commandResult.isEmptyRepositoryLog()) {
+            return GitDataResult.Success(emptyArray())
+        }
         commandFailure(commandResult)?.let { return it }
 
         val userStatsData = mutableMapOf<String, UserStats>()
@@ -115,6 +118,9 @@ class GitUtils(project: Project) {
             settingModel
         )
         val commandResult = Utils.runCommand(basePath, command, timeoutAmount, timeUnit)
+        if (commandResult.isEmptyRepositoryLog()) {
+            return GitDataResult.Success(emptyArray())
+        }
         commandFailure(commandResult)?.let { return it }
 
         val userStatsData = mutableMapOf<String, UserStats>()
@@ -189,5 +195,10 @@ class GitUtils(project: Project) {
 
             else -> null
         }
+    }
+
+    private fun CommandResult.isEmptyRepositoryLog(): Boolean {
+        return exitCode == 128 &&
+            output.contains("does not have any commits yet", ignoreCase = true)
     }
 }
