@@ -28,7 +28,7 @@ class SettingDialogWrapper(defaultSettingModel: SettingModel) : DialogWrapper(tr
     private val excludePathFields = mutableListOf<JBTextField>()
 
     init {
-        title = "Git Stats Settings"
+        title = MyBundle.message("settingDialogTitle")
         init()
     }
 

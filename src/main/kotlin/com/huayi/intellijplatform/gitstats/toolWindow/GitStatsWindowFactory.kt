@@ -6,7 +6,10 @@ import com.huayi.intellijplatform.gitstats.components.SettingAction
 import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.huayi.intellijplatform.gitstats.services.GitStatsSettingsService
 import com.huayi.intellijplatform.gitstats.services.GitStatsService
+import com.huayi.intellijplatform.gitstats.services.GitStatsResult
 import com.huayi.intellijplatform.gitstats.utils.Utils
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.components.service
@@ -14,6 +17,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.*
@@ -21,11 +25,14 @@ import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.table.JBTable
 import com.intellij.util.ui.CalendarView
+import com.intellij.util.ui.UIUtil
 import java.awt.BorderLayout
 import java.awt.CardLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.text.ParseException
@@ -72,20 +79,51 @@ class GitStatsWindowFactory : ToolWindowFactory {
             border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
 
             val loadingPanel = JBLoadingPanel(BorderLayout(), toolWindow.project)
-            val contentPanel = JBPanel<JBPanel<*>>().apply {
-                val tablePanel = JBScrollPane(table).apply {
-                    isFocusable = false
-                    border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
-                }
-                add(tablePanel)
+            val tablePanel = JBScrollPane(table).apply {
+                isFocusable = false
+                border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
+            }
+            val stateTitleLabel = JBLabel("", SwingConstants.CENTER).apply {
+                font = font.deriveFont(Font.BOLD, 15f)
+                alignmentX = Component.CENTER_ALIGNMENT
+            }
+            val stateMessageLabel = JBLabel("", SwingConstants.CENTER).apply {
+                foreground = UIUtil.getContextHelpForeground()
+                alignmentX = Component.CENTER_ALIGNMENT
+            }
+            val statePanel = createStatePanel(stateTitleLabel, stateMessageLabel)
+            val contentLayout = CardLayout()
+            val contentPanel = JBPanel<JBPanel<*>>(contentLayout).apply {
+                add(tablePanel, CONTENT_TABLE)
+                add(loadingPanel, CONTENT_LOADING)
+                add(statePanel, CONTENT_STATE)
+            }
 
-                add(loadingPanel)
+            fun showState(title: String, message: String) {
+                stateTitleLabel.text = title
+                stateMessageLabel.text = htmlCenter(message)
+                contentLayout.show(contentPanel, CONTENT_STATE)
+            }
 
-                layout = CardLayout().also {
-                    it.addLayoutComponent(tablePanel, "content_table")
-                    it.addLayoutComponent(loadingPanel, "content_loading")
+            fun renderResult(result: GitStatsResult) {
+                when (result) {
+                    is GitStatsResult.Success -> {
+                        table.model = result.model
+                        contentLayout.show(contentPanel, CONTENT_TABLE)
+                    }
+
+                    is GitStatsResult.Empty -> showState(result.title, result.message)
+
+                    is GitStatsResult.Failure -> {
+                        showState(result.title, result.message)
+                        result.details?.let { thisLogger().warn("Git Stats status details:\n$it") }
+                        if (result.notify) {
+                            notifyFailure(toolWindow.project, result)
+                        }
+                    }
                 }
             }
+
             val headerPanel = createDateFilterRow().apply {
                 fun setDateRange(start: Date, end: Date) {
                     val (normalizedStart, normalizedEnd) = orderedRange(startOfDay(start), endOfDay(end))
@@ -111,27 +149,29 @@ class GitStatsWindowFactory : ToolWindowFactory {
                         }
                         startLoading()
                         loadingPanel.startLoading()
-                        (contentPanel.layout as CardLayout).show(contentPanel, "content_loading")
+                        contentLayout.show(contentPanel, CONTENT_LOADING)
                         thread {
-                            try {
-                                val statsModel = if (settingModel.mode == SettingModel.MODE_FAST_SUMMARY) {
+                            val result = try {
+                                if (settingModel.mode == SettingModel.MODE_FAST_SUMMARY) {
                                     service.getTopSpeedUserStats(startTime, endTime, settingModel)
                                 } else {
                                     service.getUserStats(startTime, endTime, settingModel)
                                 }
-                                SwingUtilities.invokeLater {
-                                    table.model = statsModel
-                                    loadingPanel.stopLoading()
-                                    (contentPanel.layout as CardLayout).show(contentPanel, "content_table")
-                                    stopLoading()
-                                }
                             } catch (throwable: Throwable) {
                                 thisLogger().warn("Failed to refresh Git stats", throwable)
-                                SwingUtilities.invokeLater {
-                                    loadingPanel.stopLoading()
-                                    (contentPanel.layout as CardLayout).show(contentPanel, "content_table")
-                                    stopLoading()
-                                }
+                                GitStatsResult.Failure(
+                                    MyBundle.message("stateUnexpectedErrorTitle"),
+                                    MyBundle.message(
+                                        "stateUnexpectedErrorMessage",
+                                        throwable.message ?: throwable::class.java.simpleName
+                                    ),
+                                    throwable.stackTraceToString()
+                                )
+                            }
+                            SwingUtilities.invokeLater {
+                                loadingPanel.stopLoading()
+                                stopLoading()
+                                renderResult(result)
                             }
                         }
                     }
@@ -302,6 +342,36 @@ class GitStatsWindowFactory : ToolWindowFactory {
         }
 
         companion object {
+            private const val CONTENT_TABLE = "content_table"
+            private const val CONTENT_LOADING = "content_loading"
+            private const val CONTENT_STATE = "content_state"
+            private const val NOTIFICATION_GROUP_ID = "GitStats"
+
+            private fun notifyFailure(project: Project, result: GitStatsResult.Failure) {
+                NotificationGroupManager.getInstance()
+                    .getNotificationGroup(NOTIFICATION_GROUP_ID)
+                    .createNotification(result.title, result.message, NotificationType.ERROR)
+                    .notify(project)
+            }
+
+            private fun createStatePanel(titleLabel: JBLabel, messageLabel: JBLabel) =
+                JBPanel<JBPanel<*>>(GridBagLayout()).apply {
+                    val content = JBPanel<JBPanel<*>>().apply {
+                        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+                        border = BorderFactory.createEmptyBorder(0, 24, 0, 24)
+                        add(titleLabel)
+                        add(JBBox.createVerticalStrut(8))
+                        add(messageLabel)
+                    }
+                    add(content, GridBagConstraints())
+                }
+
+            private fun htmlCenter(message: String): String {
+                return "<html><div style=\"width:420px;text-align:center;\">" +
+                    StringUtil.escapeXmlEntities(message) +
+                    "</div></html>"
+            }
+
             private fun createDateFilterRow() = JBPanel<JBPanel<*>>().apply {
                 layout = BoxLayout(this, BoxLayout.X_AXIS)
                 alignmentX = Component.LEFT_ALIGNMENT

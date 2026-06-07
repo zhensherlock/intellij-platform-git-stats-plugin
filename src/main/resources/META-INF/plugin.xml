@@ -18,6 +18,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Git Stats" secondary="true" icon="/META-INF/icon.svg" anchor="bottom"
                     factoryClass="com.huayi.intellijplatform.gitstats.toolWindow.GitStatsWindowFactory"/>
+        <notificationGroup id="GitStats" displayType="BALLOON"/>
     </extensions>
 
 </idea-plugin>
