@@ -48,7 +48,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
         fun getContent(toolWindow: ToolWindow) = JBPanel<JBPanel<*>>(BorderLayout()).apply {
             var (startTime, endTime) = Utils.getThisWeekDateTimeRange()
             val settingModel = SettingModel().apply {
-                mode = "Top-speed"
+                mode = SettingModel.MODE_FAST_SUMMARY
                 exclude = ""
             }
             val table = JBTable().apply {
@@ -140,7 +140,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
                         (contentPanel.layout as CardLayout).show(contentPanel, "content_loading")
                         thread {
                             try {
-                                val statsModel = if (settingModel.mode == "Top-speed") {
+                                val statsModel = if (settingModel.mode == SettingModel.MODE_FAST_SUMMARY) {
                                     service.getTopSpeedUserStats(startTime, endTime, settingModel)
                                 } else {
                                     service.getUserStats(startTime, endTime, settingModel)

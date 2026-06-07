@@ -8,16 +8,17 @@ class MyPluginTest : BasePlatformTestCase() {
 
     fun testBundleLabels() {
         assertEquals("Refresh", MyBundle.message("refreshButtonLabel"))
+        assertEquals("Refreshing...", MyBundle.message("refreshButtonLoadingLabel"))
         assertEquals("Mode:", MyBundle.message("settingDialogModeLabel"))
     }
 
     fun testRefreshButtonCanEnterLoadingStateDuringInitialization() = runOnEdt {
-        val button = RefreshButton("Refresh", "Loading")
+        val button = RefreshButton("Refresh", "Refreshing...")
 
         button.startLoading()
 
         assertFalse(button.isEnabled)
-        assertEquals("Loading", button.text)
+        assertEquals("Refreshing...", button.text)
         assertNotNull(button.disabledIcon)
 
         button.stopLoading()

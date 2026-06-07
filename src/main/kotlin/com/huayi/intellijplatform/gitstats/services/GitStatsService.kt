@@ -38,7 +38,7 @@ class GitStatsService(p: Project) {
         }.toTypedArray()
         return StatsTableModel(
             data,
-            arrayOf("Author", "CommitCount", "AddedLines", "DeletedLines", "ModifiedFileCount")
+            arrayOf("Author", "Commits", "Lines Added", "Lines Deleted", "Modified Files")
         )
     }
 
@@ -62,7 +62,7 @@ class GitStatsService(p: Project) {
         }.toTypedArray()
         return StatsTableModel(
             data,
-            arrayOf("Author", "AddedLines", "DeletedLines", "ModifiedFileCount")
+            arrayOf("Author", "Lines Added", "Lines Deleted", "Modified Files")
         )
     }
 }

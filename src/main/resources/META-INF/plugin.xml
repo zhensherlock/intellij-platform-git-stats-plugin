@@ -4,7 +4,7 @@
     <name>GitStats</name>
     <vendor>huayi</vendor>
     <description><![CDATA[
-        <p>GitStats helps you understand code-writing activity in the current IDE project by counting source code changes in the project directory. It groups added lines, deleted lines, and modified files by time period, then presents the result as a table.</p>
+        <p>GitStats helps you understand code activity in the current IDE project. It counts added lines, deleted lines, modified files, and commits within a selected date range, then groups the results by author.</p>
         <p>GitStats 通过统计当前 IDE 打开的项目目录中的源代码修改情况，帮助用户了解项目代码编写情况。它会按时间段分组统计添加代码行数、删除代码行数、修改文件数量，并以列表形式展示结果。</p>
     ]]></description>
 
