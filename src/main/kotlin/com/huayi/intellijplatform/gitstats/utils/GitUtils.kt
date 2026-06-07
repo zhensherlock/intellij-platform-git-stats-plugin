@@ -49,7 +49,7 @@ class GitUtils(project: Project) {
         val timeUnit = TimeUnit.SECONDS
         val os = Utils.getOS()
         val commands = mutableListOf<String>()
-        val folder = if (settingModel.exclude.isEmpty()) "." else ". ':(exclude)${settingModel.exclude}'"
+        val folder = buildPathspecArgs(settingModel)
         when {
             os == "Windows" && gitBashExecutablePath?.isNotEmpty() ?: false -> {
                 commands += gitBashExecutablePath!!
@@ -86,7 +86,7 @@ class GitUtils(project: Project) {
         val separator = "--"
         val os = Utils.getOS()
         val commands = mutableListOf<String>()
-        val folder = if (settingModel.exclude.isEmpty()) "." else ". ':(exclude)${settingModel.exclude}'"
+        val folder = buildPathspecArgs(settingModel)
         if (os == "Windows" && gitBashExecutablePath?.isNotEmpty() == true) {
             commands += gitBashExecutablePath
             commands += "-c"
@@ -135,4 +135,12 @@ class GitUtils(project: Project) {
         }
         return userStatsData.values.toTypedArray()
     }
+
+    private fun buildPathspecArgs(settingModel: SettingModel): String {
+        val excludePathspecs = settingModel.excludePaths()
+            .map { shellQuote(":(exclude)$it") }
+        return (listOf(".") + excludePathspecs).joinToString(" ")
+    }
+
+    private fun shellQuote(value: String): String = "'${value.replace("'", "'\\''")}'"
 }

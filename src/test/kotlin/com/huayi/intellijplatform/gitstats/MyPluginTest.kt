@@ -1,6 +1,7 @@
 package com.huayi.intellijplatform.gitstats
 
 import com.huayi.intellijplatform.gitstats.components.RefreshButton
+import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import javax.swing.SwingUtilities
 
@@ -10,6 +11,21 @@ class MyPluginTest : BasePlatformTestCase() {
         assertEquals("Refresh", MyBundle.message("refreshButtonLabel"))
         assertEquals("Refreshing...", MyBundle.message("refreshButtonLoadingLabel"))
         assertEquals("Mode:", MyBundle.message("settingDialogModeLabel"))
+        assertEquals("Add Path", MyBundle.message("settingDialogAddPathButton"))
+    }
+
+    fun testExcludePathsAreNormalized() {
+        val paths = SettingModel.parseExcludePaths(
+            """
+            vendor
+              dist
+            build\generated
+            vendor
+
+            """.trimIndent()
+        )
+
+        assertEquals(listOf("vendor", "dist", "build/generated"), paths)
     }
 
     fun testRefreshButtonCanEnterLoadingStateDuringInitialization() = runOnEdt {
