@@ -12,6 +12,18 @@ pluginManagement {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
     id("org.jetbrains.intellij.platform.settings") version "2.16.0"
+    id("org.danilopianini.gradle-pre-commit-git-hooks") version "2.1.18"
+}
+
+gitHooks {
+    commitMsg {
+        conventionalCommits {
+            defaultTypes()
+            types("release")
+        }
+    }
+
+    createHooks(true)
 }
 
 @Suppress("UnstableApiUsage")
