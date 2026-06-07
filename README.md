@@ -1,52 +1,104 @@
-# intellij-platform-git-stats-plugin
+<p align="center">
+  <a href="https://plugins.jetbrains.com/plugin/21806-gitstats" target="_blank" rel="noopener noreferrer">
+    <img width="900" src="./docs/assets/readme-poster.png" alt="GitStats IntelliJ Platform plugin promotional poster">
+  </a>
+</p>
 
-![Build](https://github.com/zhensherlock/intellij-platform-git-stats-plugin/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/com.huayi.intellijplatform.gitstats.svg)](https://plugins.jetbrains.com/plugin/com.huayi.intellijplatform.gitstats)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.huayi.intellijplatform.gitstats.svg)](https://plugins.jetbrains.com/plugin/com.huayi.intellijplatform.gitstats)
+# GitStats
 
-[//]: # (## Template ToDo list)
+Git contribution statistics for IntelliJ Platform IDEs.
 
-[//]: # (- [x] Create a new [IntelliJ Platform Plugin Template][template] project.)
-
-[//]: # (- [ ] Get familiar with the [template documentation][template].)
-
-[//]: # (- [ ] Adjust the [pluginGroup]&#40;./gradle.properties&#41;, [plugin ID]&#40;./src/main/resources/META-INF/plugin.xml&#41; and [sources package]&#40;./src/main/kotlin&#41;.)
-
-[//]: # (- [ ] Adjust the plugin description in `README` &#40;see [Tips][docs:plugin-description]&#41;)
-
-[//]: # (- [ ] Review the [Legal Agreements]&#40;https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html?from=IJPluginTemplate&#41;.)
-
-[//]: # (- [ ] [Publish a plugin manually]&#40;https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate&#41; for the first time.)
-
-[//]: # (- [ ] Set the `PLUGIN_ID` in the above README badges.)
-
-[//]: # (- [ ] Set the [Plugin Signing]&#40;https://plugins.jetbrains.com/docs/intellij/plugin-signing.html?from=IJPluginTemplate&#41; related [secrets]&#40;https://github.com/JetBrains/intellij-platform-plugin-template#environment-variables&#41;.)
-
-[//]: # (- [ ] Set the [Deployment Token]&#40;https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html?from=IJPluginTemplate&#41;.)
-
-[//]: # (- [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.)
+[![][jetbrains-version-shield]][jetbrains-plugin-link]
+[![][jetbrains-downloads-shield]][jetbrains-plugin-link]
+[![][github-release-date-shield]][github-release-date-link]
+[![][github-action-build-shield]][github-action-build-link]
+[![][github-license-shield]][github-license-link]
 
 <!-- Plugin description -->
-This plugin aims to help users better understand their code writing by counting the modifications of the source code in the project directory opened by the current IDE. It groups and counts the number of added lines of code, deleted lines of code, and modified files within a certain time period, and finally presents the results in a list form, allowing users to have a clear understanding of the overall code writing situation of their projects.
+GitStats helps you understand code-writing activity in the current IDE project by reading Git history, grouping source code changes within a selected time range, and presenting author-level statistics in a tool window. It shows commit count, added lines, deleted lines, and modified files so you can quickly review project contribution activity without leaving the IDE.
 
-本插件旨在通过统计当前IDE打开的项目目录中的源代码修改情况，帮助用户更好地了解自己的代码编写情况。通过分组统计某个时间段内的添加代码行数、删除代码行数、修改文件数量，最后用列表形式展现，让用户清晰地了解自己项目的整体编写情况。
+GitStats 通过读取当前 IDE 项目的 Git 历史，按所选时间范围统计源码变更，并在工具窗口中展示作者维度的数据。它会呈现提交数、添加行数、删除行数和修改文件数，让你无需离开 IDE 就能快速了解项目贡献活跃度。
 <!-- Plugin description end -->
+
+## Why GitStats?
+
+- Review Git contribution activity directly in the IDE.
+- Filter statistics by start date and end date.
+- Compare authors by commits, added lines, deleted lines, and modified files.
+- Use `Fast Summary` mode for a quick ranking view, or `Detailed` mode when commit count is needed.
+- Exclude noisy paths such as generated files, build outputs, or vendor directories.
 
 ## Installation
 
-- Using IDE built-in plugin system:
-  
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "intellij-platform-git-stats-plugin"</kbd> >
-  <kbd>Install Plugin</kbd>
-  
-- Manually:
+- Marketplace:
 
-  Download the [latest release](https://github.com/zhensherlock/intellij-platform-git-stats-plugin/releases/latest) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+  Install from [JetBrains Marketplace][jetbrains-plugin-link], or open <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd>, search for `GitStats`, then install the plugin.
 
+- Manual installation:
+
+  Download the [latest release](https://github.com/zhensherlock/intellij-platform-git-stats-plugin/releases/latest), then install it with
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Install plugin from disk...</kbd>
+
+## Usage
+
+1. Open a Git-backed project in an IntelliJ Platform IDE.
+2. Open the <kbd>Git Stats</kbd> tool window.
+3. Pick the start and end dates for the reporting range.
+4. Click <kbd>Refresh</kbd> to calculate the table.
+5. Use the settings action to switch between `Fast Summary` and `Detailed`, or set excluded paths.
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for planned feature work and optimization areas.
+
+## Development
+
+Requirements:
+
+- JDK 21
+- IntelliJ IDEA 2024.2+ for local plugin development
+- Gradle Wrapper from this repository
+
+Useful commands:
+
+```bash
+./gradlew runIde
+./gradlew check
+./gradlew buildPlugin
+./gradlew verifyPlugin
+```
+
+The current source configuration targets IntelliJ Platform builds `242` through `261.*`. Release artifacts are produced as `GitStats` plugin ZIP files under `build/distributions/`.
 
 ---
-Plugin based on the [IntelliJ Platform Plugin Template][template].
 
+Built with the [IntelliJ Platform Plugin Template][template].
+
+## Contributing
+
+Feel free to dive in. [Open an issue](https://github.com/zhensherlock/intellij-platform-git-stats-plugin/issues/new/choose) or submit a pull request.
+
+Standard Readme follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
+
+### Contributors
+
+This project exists thanks to all the people who contribute.
+
+<a href="https://github.com/zhensherlock/intellij-platform-git-stats-plugin/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=zhensherlock/intellij-platform-git-stats-plugin" />
+</a>
+
+## License
+
+[MIT](LICENSE) © MichaelSun
+
+[jetbrains-plugin-link]: https://plugins.jetbrains.com/plugin/21806-gitstats
+[jetbrains-version-shield]: https://img.shields.io/jetbrains/plugin/v/com.huayi.intellijplatform.gitstats?color=1677FF&labelColor=black&logo=jetbrains&logoColor=white&style=flat-square
+[jetbrains-downloads-shield]: https://img.shields.io/jetbrains/plugin/d/com.huayi.intellijplatform.gitstats?color=1677FF&labelColor=black&style=flat-square
+[github-release-date-link]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/releases
+[github-release-date-shield]: https://img.shields.io/github/release-date/zhensherlock/intellij-platform-git-stats-plugin?color=1677FF&labelColor=black&style=flat-square
+[github-action-build-link]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/actions/workflows/build.yml
+[github-action-build-shield]: https://img.shields.io/github/actions/workflow/status/zhensherlock/intellij-platform-git-stats-plugin/build.yml?branch=main&color=1677FF&label=build&labelColor=black&logo=githubactions&logoColor=white&style=flat-square
+[github-license-link]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/blob/main/LICENSE
+[github-license-shield]: https://img.shields.io/github/license/zhensherlock/intellij-platform-git-stats-plugin?color=1677FF&labelColor=black&style=flat-square
 [template]: https://github.com/JetBrains/intellij-platform-plugin-template
-[docs:plugin-description]: https://plugins.jetbrains.com/docs/intellij/plugin-user-experience.html#plugin-description-and-presentation

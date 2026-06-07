@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+- ✨ Add date range filtering for Git Stats refreshes
+- ✨ Add author filtering and row actions to the stats table
+- ✨ Persist stats mode and excluded paths, including support for multiple exclude entries
+- ✨ Improve Git command execution state handling and result feedback
+- 🐛 Treat empty Git repositories as empty results instead of an error
+- 🐛 Keep the refresh button loading state in sync
+- 🧹 Extract mode, date, and table parsing into dedicated domain utilities
+- 🧹 Refresh README, icons, and repository workflow documentation
+
 ## [0.7.0] - 2026-06-06
 
 - ✨ Migrate to IntelliJ Platform Gradle Plugin 2.x
@@ -57,7 +66,8 @@
 
 - Displays the code statistics table
 
-[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.8.0...HEAD
+[0.8.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.2...0.7.0
 [0.6.2]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.0...0.6.1

@@ -1,20 +1,36 @@
-<svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4.975 4.975 30.05 30.05" role="img" aria-labelledby="gitstats-icon-title gitstats-icon-desc">
+    <title id="gitstats-icon-title">GitStats</title>
+    <desc id="gitstats-icon-desc">A dark circular Git statistics mark with four blue bars and a white trend line.</desc>
     <defs>
-        <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-            <stop stop-color="#765AF8" offset="0"/>
-            <stop stop-color="#C059EE" offset="1"/>
+        <linearGradient id="gitstats-ring" x1="8" y1="4" x2="32" y2="36" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#D8F5FF"/>
+            <stop offset="0.2" stop-color="#73D0FF"/>
+            <stop offset="0.55" stop-color="#168BFF"/>
+            <stop offset="1" stop-color="#063C9B"/>
+        </linearGradient>
+        <linearGradient id="gitstats-face" x1="12" y1="7" x2="27" y2="35" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#0D223E"/>
+            <stop offset="0.62" stop-color="#061324"/>
+            <stop offset="1" stop-color="#020815"/>
+        </linearGradient>
+        <linearGradient id="gitstats-bar" x1="10" y1="18" x2="30" y2="32" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#1FA8FF"/>
+            <stop offset="1" stop-color="#1268E8"/>
         </linearGradient>
     </defs>
-    <g>
-        <rect fill="url(#gradient)"
-              x="0" y="0" width="30" height="30"
-              rx="100" ry="100"/>
-        <text x="3" y="21"
-              font-family="Arial, Helvetica, sans-serif"
-              font-size="16px"
-              letter-spacing="0"
-              fill="#FFFFFF">
-            <tspan>GS</tspan>
-        </text>
-    </g>
+    <circle cx="20" cy="20" r="13.6" fill="url(#gitstats-face)"/>
+    <circle cx="20" cy="20" r="14.3" fill="none" stroke="url(#gitstats-ring)" stroke-width="1.45"/>
+    <rect x="11.6" y="24.8" width="3" height="3.3" rx=".35" fill="url(#gitstats-bar)"/>
+    <rect x="16" y="19.5" width="3.2" height="8.6" rx=".35" fill="url(#gitstats-bar)"/>
+    <rect x="20.5" y="21.3" width="3.2" height="6.8" rx=".35" fill="url(#gitstats-bar)"/>
+    <rect x="25.1" y="15.2" width="3.2" height="12.9" rx=".35" fill="url(#gitstats-bar)"/>
+    <path d="M11.7 21.6 16.8 15.8 21.2 17.5 26.9 11.3" fill="none" stroke="#F7F7F0" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="11.7" cy="21.6" r="1.55" fill="#F7F7F0"/>
+    <circle cx="16.8" cy="15.8" r="1.55" fill="#F7F7F0"/>
+    <circle cx="21.2" cy="17.5" r="1.55" fill="#F7F7F0"/>
+    <circle cx="26.9" cy="11.3" r="1.55" fill="#F7F7F0"/>
+    <circle cx="11.7" cy="21.6" r=".58" fill="#1B9EFF"/>
+    <circle cx="16.8" cy="15.8" r=".58" fill="#1B9EFF"/>
+    <circle cx="21.2" cy="17.5" r=".58" fill="#1B9EFF"/>
+    <circle cx="26.9" cy="11.3" r=".58" fill="#1B9EFF"/>
 </svg>

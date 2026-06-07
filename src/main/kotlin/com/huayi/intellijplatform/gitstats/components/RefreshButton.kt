@@ -1,34 +1,37 @@
 package com.huayi.intellijplatform.gitstats.components
 
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
+import com.intellij.icons.AllIcons
 import javax.swing.JButton
-import javax.swing.SwingWorker
 
 
-class RefreshButton(text: String?) : JButton(text), ActionListener {
+class RefreshButton(
+    private val refreshLabel: String,
+    private val loadingLabel: String,
+) : JButton(refreshLabel, REFRESH_ICON) {
     private var isLoading = false
 
-    init {
-        addActionListener(this)
-    }
+    fun startLoading() {
+        if (isLoading) return
 
-    override fun actionPerformed(e: ActionEvent) {
         isLoading = true
+        text = loadingLabel
+        icon = LOADING_ICON
+        disabledIcon = LOADING_ICON
         isEnabled = false
-        text = "Loading..."
-        BackgroundTask().execute()
+        accessibleContext?.accessibleName = loadingLabel
     }
 
-    private inner class BackgroundTask : SwingWorker<String, String>() {
-        override fun doInBackground(): String {
-            return "null"
-        }
+    fun stopLoading() {
+        isLoading = false
+        isEnabled = true
+        text = refreshLabel
+        icon = REFRESH_ICON
+        disabledIcon = null
+        accessibleContext?.accessibleName = refreshLabel
+    }
 
-        override fun done() {
-            isLoading = false
-            isEnabled = true
-            text = "Click me"
-        }
+    private companion object {
+        private val REFRESH_ICON = AllIcons.Actions.Refresh
+        private val LOADING_ICON = AllIcons.Process.Step_1
     }
 }
