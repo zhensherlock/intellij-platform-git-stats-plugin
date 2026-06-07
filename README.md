@@ -25,7 +25,7 @@ GitStats 通过读取当前 IDE 项目的 Git 历史，按所选时间范围统�
 - Review Git contribution activity directly in the IDE.
 - Filter statistics by start date and end date.
 - Compare authors by commits, added lines, deleted lines, and modified files.
-- Use `Top-speed` mode for a quick ranking view, or `Advanced` mode when commit count is needed.
+- Use `Fast Summary` mode for a quick ranking view, or `Detailed` mode when commit count is needed.
 - Exclude noisy paths such as generated files, build outputs, or vendor directories.
 
 ## Installation
@@ -45,7 +45,11 @@ GitStats 通过读取当前 IDE 项目的 Git 历史，按所选时间范围统�
 2. Open the <kbd>Git Stats</kbd> tool window.
 3. Pick the start and end dates for the reporting range.
 4. Click <kbd>Refresh</kbd> to calculate the table.
-5. Use the settings action to switch between `Top-speed` and `Advanced`, or set excluded paths.
+5. Use the settings action to switch between `Fast Summary` and `Detailed`, or set excluded paths.
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for planned feature work and optimization areas.
 
 ## Development
 
