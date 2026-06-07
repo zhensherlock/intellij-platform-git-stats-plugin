@@ -4,6 +4,7 @@ import com.huayi.intellijplatform.gitstats.MyBundle
 import com.huayi.intellijplatform.gitstats.components.RefreshButton
 import com.huayi.intellijplatform.gitstats.components.SettingAction
 import com.huayi.intellijplatform.gitstats.models.SettingModel
+import com.huayi.intellijplatform.gitstats.services.GitStatsSettingsService
 import com.huayi.intellijplatform.gitstats.services.GitStatsService
 import com.huayi.intellijplatform.gitstats.utils.Utils
 import com.intellij.openapi.Disposable
@@ -53,13 +54,11 @@ class GitStatsWindowFactory : ToolWindowFactory {
     class GitStatsWindow(toolWindow: ToolWindow) {
 
         private val service = toolWindow.project.service<GitStatsService>()
+        private val settingsService = toolWindow.project.service<GitStatsSettingsService>()
 
         fun getContent(toolWindow: ToolWindow) = JBPanel<JBPanel<*>>(BorderLayout()).apply {
             var (startTime, endTime) = Utils.getThisWeekDateTimeRange()
-            val settingModel = SettingModel().apply {
-                mode = SettingModel.MODE_FAST_SUMMARY
-                exclude = ""
-            }
+            val settingModel = settingsService.getSettings()
             val table = JBTable().apply {
                 font = Font("Microsoft YaHei", Font.PLAIN, 14)
                 tableHeader.font = Font("Microsoft YaHei", Font.BOLD, 14)
@@ -156,6 +155,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 SettingAction(MyBundle.message("settingButtonTooltipText"), settingModel) { value ->
                     settingModel.mode = value.mode
                     settingModel.exclude = value.exclude
+                    settingsService.updateSettings(settingModel)
                     refreshButton.doClick()
                 }
             actionList.add(settingAction)

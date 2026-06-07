@@ -2,6 +2,8 @@ package com.huayi.intellijplatform.gitstats
 
 import com.huayi.intellijplatform.gitstats.components.RefreshButton
 import com.huayi.intellijplatform.gitstats.models.SettingModel
+import com.huayi.intellijplatform.gitstats.services.GitStatsSettingsService
+import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import javax.swing.SwingUtilities
 
@@ -26,6 +28,42 @@ class MyPluginTest : BasePlatformTestCase() {
         )
 
         assertEquals(listOf("vendor", "dist", "build/generated"), paths)
+    }
+
+    fun testSettingsServiceNormalizesAndCopiesSettings() {
+        val service = GitStatsSettingsService()
+
+        service.updateSettings(
+            SettingModel(
+                mode = SettingModel.MODE_DETAILED,
+                exclude = """
+                    vendor
+                    build\generated
+                    vendor
+                """.trimIndent()
+            )
+        )
+
+        assertEquals(SettingModel.MODE_DETAILED, service.state.mode)
+        assertEquals("vendor\nbuild/generated", service.state.exclude)
+
+        val settings = service.getSettings()
+        settings.exclude = "dist"
+
+        assertEquals("vendor\nbuild/generated", service.state.exclude)
+    }
+
+    fun testSettingsServiceFallsBackToFastSummaryForUnknownMode() {
+        val service = GitStatsSettingsService()
+
+        service.loadState(SettingModel(mode = "Unknown", exclude = "dist"))
+
+        assertEquals(SettingModel.MODE_FAST_SUMMARY, service.state.mode)
+        assertEquals("dist", service.state.exclude)
+    }
+
+    fun testSettingsServiceIsAvailableFromProject() {
+        assertNotNull(project.service<GitStatsSettingsService>())
     }
 
     fun testRefreshButtonCanEnterLoadingStateDuringInitialization() = runOnEdt {
