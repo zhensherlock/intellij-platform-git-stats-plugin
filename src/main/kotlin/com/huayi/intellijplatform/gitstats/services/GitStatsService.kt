@@ -6,6 +6,9 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableModel
+import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableColumn
+import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableColumnKind
+import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableRow
 import com.huayi.intellijplatform.gitstats.utils.GitDataResult
 import com.huayi.intellijplatform.gitstats.utils.GitFailureReason
 import com.huayi.intellijplatform.gitstats.utils.GitUtils
@@ -93,44 +96,50 @@ class GitStatsService(p: Project) {
         settingModel: SettingModel
     ): StatsTableModel {
         if (settingModel.mode == SettingModel.MODE_DETAILED) {
-            val detailedData = userStats.map { item ->
-                arrayOf(
-                    item.author,
-                    item.commitCount.toString(),
-                    item.addedLines.toString(),
-                    item.deletedLines.toString(),
-                    item.modifiedFileCount.toString()
+            val detailedRows = userStats.map { item ->
+                StatsTableRow(
+                    author = item.author,
+                    commitCount = item.commitCount,
+                    addedLines = item.addedLines,
+                    deletedLines = item.deletedLines,
+                    modifiedFileCount = item.modifiedFileCount
                 )
-            }.toTypedArray()
+            }
             return StatsTableModel(
-                detailedData,
-                arrayOf(
-                    MyBundle.message("statsTableColumnAuthor"),
-                    MyBundle.message("statsTableColumnCommits"),
-                    MyBundle.message("statsTableColumnLinesAdded"),
-                    MyBundle.message("statsTableColumnLinesDeleted"),
-                    MyBundle.message("statsTableColumnModifiedFiles")
+                detailedRows,
+                listOf(
+                    stringColumn(StatsTableColumnKind.AUTHOR, "statsTableColumnAuthor"),
+                    intColumn(StatsTableColumnKind.COMMITS, "statsTableColumnCommits"),
+                    intColumn(StatsTableColumnKind.LINES_ADDED, "statsTableColumnLinesAdded"),
+                    intColumn(StatsTableColumnKind.LINES_DELETED, "statsTableColumnLinesDeleted"),
+                    intColumn(StatsTableColumnKind.MODIFIED_FILES, "statsTableColumnModifiedFiles")
                 )
             )
         }
-        val data = userStats.map { item ->
-            arrayOf(
-                item.author,
-                item.addedLines.toString(),
-                item.deletedLines.toString(),
-                item.modifiedFileCount.toString()
+        val rows = userStats.map { item ->
+            StatsTableRow(
+                author = item.author,
+                addedLines = item.addedLines,
+                deletedLines = item.deletedLines,
+                modifiedFileCount = item.modifiedFileCount
             )
-        }.toTypedArray()
+        }
         return StatsTableModel(
-            data,
-            arrayOf(
-                MyBundle.message("statsTableColumnAuthor"),
-                MyBundle.message("statsTableColumnLinesAdded"),
-                MyBundle.message("statsTableColumnLinesDeleted"),
-                MyBundle.message("statsTableColumnModifiedFiles")
+            rows,
+            listOf(
+                stringColumn(StatsTableColumnKind.AUTHOR, "statsTableColumnAuthor"),
+                intColumn(StatsTableColumnKind.LINES_ADDED, "statsTableColumnLinesAdded"),
+                intColumn(StatsTableColumnKind.LINES_DELETED, "statsTableColumnLinesDeleted"),
+                intColumn(StatsTableColumnKind.MODIFIED_FILES, "statsTableColumnModifiedFiles")
             )
         )
     }
+
+    private fun stringColumn(kind: StatsTableColumnKind, messageKey: String) =
+        StatsTableColumn(kind, MyBundle.message(messageKey), String::class.java)
+
+    private fun intColumn(kind: StatsTableColumnKind, messageKey: String) =
+        StatsTableColumn(kind, MyBundle.message(messageKey), Int::class.javaObjectType)
 
     private fun GitDataResult.Failure.toGitStatsResult(): GitStatsResult.Failure {
         val summary = summarize(details)

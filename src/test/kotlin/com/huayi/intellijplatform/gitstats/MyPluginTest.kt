@@ -5,6 +5,10 @@ import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.huayi.intellijplatform.gitstats.services.GitStatsSettingsService
 import com.huayi.intellijplatform.gitstats.services.GitStatsResult
 import com.huayi.intellijplatform.gitstats.services.GitStatsService
+import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableColumn
+import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableColumnKind
+import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableModel
+import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableRow
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.io.File
@@ -68,6 +72,32 @@ class MyPluginTest : BasePlatformTestCase() {
 
     fun testSettingsServiceIsAvailableFromProject() {
         assertNotNull(project.service<GitStatsSettingsService>())
+    }
+
+    fun testStatsTableModelUsesTypedNumericValues() {
+        val model = StatsTableModel(
+            listOf(
+                StatsTableRow(
+                    author = "Ada",
+                    commitCount = 3,
+                    addedLines = 120,
+                    deletedLines = 40,
+                    modifiedFileCount = 8
+                )
+            ),
+            listOf(
+                StatsTableColumn(StatsTableColumnKind.AUTHOR, "Author", String::class.java),
+                StatsTableColumn(StatsTableColumnKind.COMMITS, "Commits", Int::class.javaObjectType),
+                StatsTableColumn(StatsTableColumnKind.LINES_ADDED, "Lines Added", Int::class.javaObjectType)
+            )
+        )
+
+        assertEquals(String::class.java, model.getColumnClass(0))
+        assertEquals(Int::class.javaObjectType, model.getColumnClass(1))
+        assertEquals("Ada", model.getValueAt(0, 0))
+        assertEquals(3, model.getValueAt(0, 1))
+        assertEquals(120, model.getValueAt(0, 2))
+        assertFalse(model.isCellEditable(0, 0))
     }
 
     fun testGitStatsServiceReturnsFailureForNonGitProject() {

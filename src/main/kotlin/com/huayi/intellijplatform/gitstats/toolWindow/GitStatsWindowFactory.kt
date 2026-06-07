@@ -35,10 +35,16 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
+import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.regex.Pattern
 import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
+import javax.swing.table.DefaultTableCellRenderer
+import javax.swing.table.TableRowSorter
 import kotlin.concurrent.thread
 
 
@@ -48,7 +54,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
 //        thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
 //    }
 
-    private val contentFactory = ContentFactory.SERVICE.getInstance()
+    private val contentFactory = ContentFactory.getInstance()
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val gitStatsWindow = GitStatsWindow(toolWindow)
@@ -66,15 +72,19 @@ class GitStatsWindowFactory : ToolWindowFactory {
         fun getContent(toolWindow: ToolWindow) = JBPanel<JBPanel<*>>(BorderLayout()).apply {
             var (startTime, endTime) = Utils.getThisWeekDateTimeRange()
             val settingModel = settingsService.getSettings()
-            val table = JBTable().apply {
+            var activeSorter: TableRowSorter<StatsTableModel>? = null
+            var activeAuthorFilter = ""
+            val table = JBTable(StatsTableModel.empty()).apply {
                 font = Font("Microsoft YaHei", Font.PLAIN, 14)
                 tableHeader.font = Font("Microsoft YaHei", Font.BOLD, 14)
                 border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
                 columnSelectionAllowed = false
                 rowSelectionAllowed = true
                 rowHeight = 30
-                setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+                fillsViewportHeight = true
+                setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
             }
+            StatsTableActions.install(table, toolWindow.project)
             var refreshButton: RefreshButton
             border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
 
@@ -82,6 +92,13 @@ class GitStatsWindowFactory : ToolWindowFactory {
             val tablePanel = JBScrollPane(table).apply {
                 isFocusable = false
                 border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
+            }
+            val summaryLabel = JBLabel(MyBundle.message("statsSummaryNoRows")).apply {
+                foreground = UIUtil.getContextHelpForeground()
+            }
+            val tableContentPanel = JBPanel<JBPanel<*>>(BorderLayout()).apply {
+                add(tablePanel, BorderLayout.CENTER)
+                add(createSummaryPanel(summaryLabel), BorderLayout.SOUTH)
             }
             val stateTitleLabel = JBLabel("", SwingConstants.CENTER).apply {
                 font = font.deriveFont(Font.BOLD, 15f)
@@ -94,13 +111,42 @@ class GitStatsWindowFactory : ToolWindowFactory {
             val statePanel = createStatePanel(stateTitleLabel, stateMessageLabel)
             val contentLayout = CardLayout()
             val contentPanel = JBPanel<JBPanel<*>>(contentLayout).apply {
-                add(tablePanel, CONTENT_TABLE)
+                add(tableContentPanel, CONTENT_TABLE)
                 add(loadingPanel, CONTENT_LOADING)
                 add(statePanel, CONTENT_STATE)
             }
 
+            fun updateSummary() {
+                val model = table.model as? StatsTableModel ?: StatsTableModel.empty()
+                summaryLabel.text = createSummaryText(model, visibleRows(table, model))
+            }
+
+            fun applyAuthorFilter() {
+                val sorter = activeSorter ?: return
+                val model = sorter.model
+                sorter.rowFilter = createAuthorFilter(model, activeAuthorFilter)
+                updateSummary()
+            }
+
+            fun configureTableModel(model: StatsTableModel) {
+                table.model = model
+                val sorter = TableRowSorter(model)
+                table.rowSorter = sorter
+                activeSorter = sorter
+                configureColumns(table, model)
+                applyDefaultSort(sorter, model)
+                applyAuthorFilter()
+                sorter.addRowSorterListener {
+                    updateSummary()
+                }
+                updateSummary()
+            }
+
             fun showState(title: String, message: String) {
-                table.model = StatsTableModel(arrayOf(), arrayOf())
+                table.rowSorter = null
+                activeSorter = null
+                table.model = StatsTableModel.empty()
+                updateSummary()
                 stateTitleLabel.text = title
                 stateMessageLabel.text = htmlCenter(message)
                 contentLayout.show(contentPanel, CONTENT_STATE)
@@ -109,7 +155,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
             fun renderResult(result: GitStatsResult) {
                 when (result) {
                     is GitStatsResult.Success -> {
-                        table.model = result.model
+                        configureTableModel(result.model)
                         contentLayout.show(contentPanel, CONTENT_TABLE)
                     }
 
@@ -138,6 +184,17 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 add(JBLabel(MyBundle.message("filterDateRangeLabel")))
                 add(JBBox.createHorizontalStrut(6))
                 add(dateRangeField)
+                add(JBBox.createHorizontalStrut(10))
+                add(JBLabel(MyBundle.message("filterAuthorLabel")))
+                add(JBBox.createHorizontalStrut(6))
+                add(ExtendableTextField().apply {
+                    emptyText.text = MyBundle.message("filterAuthorPlaceholder")
+                    setFixedWidth(170)
+                    onTextChanged {
+                        activeAuthorFilter = text.trim()
+                        applyAuthorFilter()
+                    }
+                })
                 add(JBBox.createHorizontalStrut(10))
                 refreshButton = RefreshButton(
                     MyBundle.message("refreshButtonLabel"),
@@ -367,6 +424,105 @@ class GitStatsWindowFactory : ToolWindowFactory {
                     add(content, GridBagConstraints())
                 }
 
+            private fun createSummaryPanel(summaryLabel: JBLabel) =
+                JBPanel<JBPanel<*>>(BorderLayout()).apply {
+                    border = BorderFactory.createEmptyBorder(6, 10, 6, 10)
+                    add(summaryLabel, BorderLayout.WEST)
+                }
+
+            private fun createSummaryText(model: StatsTableModel, rows: List<StatsTableRow>): String {
+                if (rows.isEmpty()) {
+                    return MyBundle.message("statsSummaryNoRows")
+                }
+                val formatter = NumberFormat.getIntegerInstance()
+                val authors = formatter.format(rows.size)
+                val addedLines = formatter.format(rows.sumOf { it.addedLines })
+                val deletedLines = formatter.format(rows.sumOf { it.deletedLines })
+                val modifiedFiles = formatter.format(rows.sumOf { it.modifiedFileCount })
+                if (model.hasColumn(StatsTableColumnKind.COMMITS)) {
+                    return MyBundle.message(
+                        "statsSummaryDetailed",
+                        authors,
+                        formatter.format(rows.sumOf { it.commitCount ?: 0 }),
+                        addedLines,
+                        deletedLines,
+                        modifiedFiles
+                    )
+                }
+                return MyBundle.message(
+                    "statsSummaryFast",
+                    authors,
+                    addedLines,
+                    deletedLines,
+                    modifiedFiles
+                )
+            }
+
+            private fun visibleRows(table: JTable, model: StatsTableModel): List<StatsTableRow> {
+                return (0 until table.rowCount).map { viewRow ->
+                    model.rowAt(table.convertRowIndexToModel(viewRow))
+                }
+            }
+
+            private fun createAuthorFilter(
+                model: StatsTableModel,
+                authorFilter: String
+            ): RowFilter<StatsTableModel, Int>? {
+                if (authorFilter.isBlank()) {
+                    return null
+                }
+                val authorColumn = model.columnIndex(StatsTableColumnKind.AUTHOR)
+                if (authorColumn < 0) {
+                    return null
+                }
+                val pattern = Pattern.compile(Pattern.quote(authorFilter), Pattern.CASE_INSENSITIVE)
+                return object : RowFilter<StatsTableModel, Int>() {
+                    override fun include(entry: Entry<out StatsTableModel, out Int>): Boolean {
+                        return pattern.matcher(entry.getStringValue(authorColumn)).find()
+                    }
+                }
+            }
+
+            private fun applyDefaultSort(sorter: TableRowSorter<StatsTableModel>, model: StatsTableModel) {
+                val defaultColumn = if (model.hasColumn(StatsTableColumnKind.COMMITS)) {
+                    model.columnIndex(StatsTableColumnKind.COMMITS)
+                } else {
+                    model.columnIndex(StatsTableColumnKind.LINES_ADDED)
+                }
+                if (defaultColumn >= 0) {
+                    sorter.sortKeys = listOf(RowSorter.SortKey(defaultColumn, SortOrder.DESCENDING))
+                }
+            }
+
+            private fun configureColumns(table: JTable, model: StatsTableModel) {
+                val numericRenderer = DefaultTableCellRenderer().apply {
+                    horizontalAlignment = SwingConstants.RIGHT
+                }
+                model.columns.forEachIndexed { modelIndex, column ->
+                    val viewIndex = table.convertColumnIndexToView(modelIndex)
+                    if (viewIndex < 0) return@forEachIndexed
+                    val tableColumn = table.columnModel.getColumn(viewIndex)
+                    when (column.kind) {
+                        StatsTableColumnKind.AUTHOR -> {
+                            tableColumn.minWidth = 160
+                            tableColumn.preferredWidth = 260
+                        }
+                        StatsTableColumnKind.COMMITS -> {
+                            tableColumn.minWidth = 80
+                            tableColumn.preferredWidth = 90
+                            tableColumn.cellRenderer = numericRenderer
+                        }
+                        StatsTableColumnKind.LINES_ADDED,
+                        StatsTableColumnKind.LINES_DELETED,
+                        StatsTableColumnKind.MODIFIED_FILES -> {
+                            tableColumn.minWidth = 110
+                            tableColumn.preferredWidth = 130
+                            tableColumn.cellRenderer = numericRenderer
+                        }
+                    }
+                }
+            }
+
             private fun htmlCenter(message: String): String {
                 return "<html><div style=\"width:420px;text-align:center;\">" +
                     StringUtil.escapeXmlEntities(message) +
@@ -385,6 +541,22 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 preferredSize = fixedSize
                 maximumSize = fixedSize
                 minimumSize = fixedSize
+            }
+
+            private fun JTextField.onTextChanged(action: () -> Unit) {
+                document.addDocumentListener(object : DocumentListener {
+                    override fun insertUpdate(e: DocumentEvent) {
+                        action()
+                    }
+
+                    override fun removeUpdate(e: DocumentEvent) {
+                        action()
+                    }
+
+                    override fun changedUpdate(e: DocumentEvent) {
+                        action()
+                    }
+                })
             }
 
             private fun formatDate(date: Date) = SimpleDateFormat("yyyy-MM-dd").format(date)
