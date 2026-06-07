@@ -74,7 +74,7 @@ jobs:
           git config user.name "GitHub Action"
 
           git checkout -b "$BRANCH"
-          git commit -am "Changelog update - $VERSION"
+          git commit -am "release: update changelog for $VERSION"
           git push --set-upstream origin "$BRANCH"
 
           gh label create "$LABEL" \
