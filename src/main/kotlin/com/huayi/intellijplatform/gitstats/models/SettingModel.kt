@@ -6,9 +6,11 @@ data class SettingModel(
 ) {
     fun excludePaths(): List<String> = parseExcludePaths(exclude)
 
+    fun statsMode(): StatsMode = StatsMode.fromStoredValue(mode)
+
     companion object {
-        const val MODE_FAST_SUMMARY = "Fast Summary"
-        const val MODE_DETAILED = "Detailed"
+        const val MODE_FAST_SUMMARY = "fast_summary"
+        const val MODE_DETAILED = "detailed"
 
         fun parseExcludePaths(exclude: String): List<String> = exclude
             .lineSequence()

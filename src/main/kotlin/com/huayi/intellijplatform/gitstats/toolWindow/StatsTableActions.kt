@@ -117,35 +117,8 @@ internal object StatsTableActions {
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
     }
 
-    private data class TableSnapshot(
-        val headers: List<String>,
-        val rows: List<List<Any>>
-    )
-
-    private fun tableSnapshot(table: JTable, selectedOnly: Boolean): TableSnapshot {
-        val model = table.model as? StatsTableModel ?: return TableSnapshot(emptyList(), emptyList())
-        if (model.columnCount == 0) {
-            return TableSnapshot(emptyList(), emptyList())
-        }
-        val viewRows = if (selectedOnly) {
-            table.selectedRows.toList().sorted()
-        } else {
-            (0 until table.rowCount).toList()
-        }
-        val viewColumns = (0 until table.columnCount).toList()
-        val headers = viewColumns.map { viewColumn -> table.getColumnName(viewColumn) }
-        val rows = viewRows.map { viewRow ->
-            val modelRow = table.convertRowIndexToModel(viewRow)
-            viewColumns.map { viewColumn ->
-                val modelColumn = table.convertColumnIndexToModel(viewColumn)
-                model.getValueAt(modelRow, modelColumn)
-            }
-        }
-        return TableSnapshot(headers, rows)
-    }
-
     private fun copyRows(table: JTable, project: Project, selectedOnly: Boolean) {
-        val snapshot = tableSnapshot(table, selectedOnly)
+        val snapshot = TableSnapshots.from(table, selectedOnly)
         if (snapshot.rows.isEmpty()) {
             Messages.showInfoMessage(
                 project,
@@ -156,11 +129,11 @@ internal object StatsTableActions {
         }
         Toolkit.getDefaultToolkit()
             .systemClipboard
-            .setContents(StringSelection(toTsv(snapshot)), null)
+            .setContents(StringSelection(TableTextFormatters.toTsv(snapshot)), null)
     }
 
     private fun exportCsv(table: JTable, project: Project) {
-        val snapshot = tableSnapshot(table, selectedOnly = false)
+        val snapshot = TableSnapshots.from(table, selectedOnly = false)
         if (snapshot.rows.isEmpty()) {
             Messages.showInfoMessage(
                 project,
@@ -171,7 +144,7 @@ internal object StatsTableActions {
         }
         val targetFile = chooseCsvTarget(project) ?: return
         runCatching {
-            targetFile.writeText(toCsv(snapshot), Charsets.UTF_8)
+            targetFile.writeText(TableTextFormatters.toCsv(snapshot), Charsets.UTF_8)
         }.onFailure {
             Messages.showErrorDialog(
                 project,
@@ -213,32 +186,6 @@ internal object StatsTableActions {
             File("${file.path}.csv")
         } else {
             File(parent, "${file.name}.csv")
-        }
-    }
-
-    private fun toTsv(snapshot: TableSnapshot): String {
-        return (listOf(snapshot.headers) + snapshot.rows)
-            .joinToString("\n") { row ->
-                row.joinToString("\t") { value ->
-                    value.toString().replace('\t', ' ').replace('\n', ' ').replace('\r', ' ')
-                }
-            }
-    }
-
-    private fun toCsv(snapshot: TableSnapshot): String {
-        return (listOf(snapshot.headers) + snapshot.rows)
-            .joinToString("\n") { row ->
-                row.joinToString(",") { value -> csvEscape(value.toString()) }
-            }
-    }
-
-    private fun csvEscape(value: String): String {
-        val normalized = value.replace("\r\n", "\n").replace('\r', '\n')
-        val escaped = normalized.replace("\"", "\"\"")
-        return if (escaped.any { it == ',' || it == '"' || it == '\n' }) {
-            "\"$escaped\""
-        } else {
-            escaped
         }
     }
 }

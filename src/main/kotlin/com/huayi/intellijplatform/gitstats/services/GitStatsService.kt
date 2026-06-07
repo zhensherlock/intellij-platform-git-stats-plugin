@@ -2,13 +2,10 @@ package com.huayi.intellijplatform.gitstats.services
 
 import com.huayi.intellijplatform.gitstats.MyBundle
 import com.huayi.intellijplatform.gitstats.models.SettingModel
+import com.huayi.intellijplatform.gitstats.models.StatsMode
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableModel
-import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableColumn
-import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableColumnKind
-import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableRow
 import com.huayi.intellijplatform.gitstats.utils.GitDataResult
 import com.huayi.intellijplatform.gitstats.utils.GitFailureReason
 import com.huayi.intellijplatform.gitstats.utils.GitUtils
@@ -17,8 +14,13 @@ import com.huayi.intellijplatform.gitstats.utils.Utils
 import java.text.SimpleDateFormat
 import java.util.*
 
+data class GitStatsReport(
+    val mode: StatsMode,
+    val userStats: List<UserStats>
+)
+
 sealed class GitStatsResult {
-    data class Success(val model: StatsTableModel) : GitStatsResult()
+    data class Success(val report: GitStatsReport) : GitStatsResult()
     data class Empty(val title: String, val message: String) : GitStatsResult()
     data class Failure(
         val title: String,
@@ -36,14 +38,21 @@ class GitStatsService(p: Project) {
         project = p
     }
 
+    fun getStats(startTime: Date, endTime: Date, settingModel: SettingModel): GitStatsResult {
+        return when (settingModel.statsMode()) {
+            StatsMode.FAST_SUMMARY -> getTopSpeedUserStats(startTime, endTime, settingModel)
+            StatsMode.DETAILED -> getUserStats(startTime, endTime, settingModel)
+        }
+    }
+
     fun getUserStats(startTime: Date, endTime: Date, settingModel: SettingModel): GitStatsResult {
-        return collectStats(startTime, endTime, settingModel) { gitUtils, startDate, endDate ->
+        return collectStats(startTime, endTime, settingModel, StatsMode.DETAILED) { gitUtils, startDate, endDate ->
             gitUtils.getUserStats(startDate, endDate, settingModel)
         }
     }
 
     fun getTopSpeedUserStats(startTime: Date, endTime: Date, settingModel: SettingModel): GitStatsResult {
-        return collectStats(startTime, endTime, settingModel) { gitUtils, startDate, endDate ->
+        return collectStats(startTime, endTime, settingModel, StatsMode.FAST_SUMMARY) { gitUtils, startDate, endDate ->
             gitUtils.getTopSpeedUserStats(startDate, endDate, settingModel)
         }
     }
@@ -52,6 +61,7 @@ class GitStatsService(p: Project) {
         startTime: Date,
         endTime: Date,
         settingModel: SettingModel,
+        mode: StatsMode,
         loadStats: (GitUtils, String, String) -> GitDataResult<Array<UserStats>>
     ): GitStatsResult {
         if (!Utils.checkDirectoryExists(project.basePath)) {
@@ -85,61 +95,11 @@ class GitStatsService(p: Project) {
                         MyBundle.message("stateNoDataMessage")
                     )
                 } else {
-                    GitStatsResult.Success(createTableModel(statsResult.data, settingModel))
+                    GitStatsResult.Success(GitStatsReport(mode, statsResult.data.toList()))
                 }
             }
         }
     }
-
-    private fun createTableModel(
-        userStats: Array<UserStats>,
-        settingModel: SettingModel
-    ): StatsTableModel {
-        if (settingModel.mode == SettingModel.MODE_DETAILED) {
-            val detailedRows = userStats.map { item ->
-                StatsTableRow(
-                    author = item.author,
-                    commitCount = item.commitCount,
-                    addedLines = item.addedLines,
-                    deletedLines = item.deletedLines,
-                    modifiedFileCount = item.modifiedFileCount
-                )
-            }
-            return StatsTableModel(
-                detailedRows,
-                listOf(
-                    stringColumn(StatsTableColumnKind.AUTHOR, "statsTableColumnAuthor"),
-                    intColumn(StatsTableColumnKind.COMMITS, "statsTableColumnCommits"),
-                    intColumn(StatsTableColumnKind.LINES_ADDED, "statsTableColumnLinesAdded"),
-                    intColumn(StatsTableColumnKind.LINES_DELETED, "statsTableColumnLinesDeleted"),
-                    intColumn(StatsTableColumnKind.MODIFIED_FILES, "statsTableColumnModifiedFiles")
-                )
-            )
-        }
-        val rows = userStats.map { item ->
-            StatsTableRow(
-                author = item.author,
-                addedLines = item.addedLines,
-                deletedLines = item.deletedLines,
-                modifiedFileCount = item.modifiedFileCount
-            )
-        }
-        return StatsTableModel(
-            rows,
-            listOf(
-                stringColumn(StatsTableColumnKind.AUTHOR, "statsTableColumnAuthor"),
-                intColumn(StatsTableColumnKind.LINES_ADDED, "statsTableColumnLinesAdded"),
-                intColumn(StatsTableColumnKind.LINES_DELETED, "statsTableColumnLinesDeleted"),
-                intColumn(StatsTableColumnKind.MODIFIED_FILES, "statsTableColumnModifiedFiles")
-            )
-        )
-    }
-
-    private fun stringColumn(kind: StatsTableColumnKind, messageKey: String) =
-        StatsTableColumn(kind, MyBundle.message(messageKey), String::class.java)
-
-    private fun intColumn(kind: StatsTableColumnKind, messageKey: String) =
-        StatsTableColumn(kind, MyBundle.message(messageKey), Int::class.javaObjectType)
 
     private fun GitDataResult.Failure.toGitStatsResult(): GitStatsResult.Failure {
         val summary = summarize(details)

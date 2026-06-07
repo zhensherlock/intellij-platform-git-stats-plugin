@@ -2,13 +2,19 @@ package com.huayi.intellijplatform.gitstats
 
 import com.huayi.intellijplatform.gitstats.components.RefreshButton
 import com.huayi.intellijplatform.gitstats.models.SettingModel
+import com.huayi.intellijplatform.gitstats.models.StatsMode
 import com.huayi.intellijplatform.gitstats.services.GitStatsSettingsService
 import com.huayi.intellijplatform.gitstats.services.GitStatsResult
 import com.huayi.intellijplatform.gitstats.services.GitStatsService
+import com.huayi.intellijplatform.gitstats.toolWindow.TableSnapshot
+import com.huayi.intellijplatform.gitstats.toolWindow.TableTextFormatters
 import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableColumn
 import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableColumnKind
 import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableModel
 import com.huayi.intellijplatform.gitstats.toolWindow.StatsTableRow
+import com.huayi.intellijplatform.gitstats.utils.DateRanges
+import com.huayi.intellijplatform.gitstats.utils.GitLogCommandBuilder
+import com.huayi.intellijplatform.gitstats.utils.GitLogParser
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.io.File
@@ -22,6 +28,8 @@ class MyPluginTest : BasePlatformTestCase() {
         assertEquals("Refreshing...", MyBundle.message("refreshButtonLoadingLabel"))
         assertEquals("Mode:", MyBundle.message("settingDialogModeLabel"))
         assertEquals("Add Path", MyBundle.message("settingDialogAddPathButton"))
+        assertEquals("Fast Summary", MyBundle.message("settingsModeFastSummary"))
+        assertEquals("Detailed", MyBundle.message("settingsModeDetailed"))
     }
 
     fun testExcludePathsAreNormalized() {
@@ -70,6 +78,15 @@ class MyPluginTest : BasePlatformTestCase() {
         assertEquals("dist", service.state.exclude)
     }
 
+    fun testSettingsServiceNormalizesLegacyModeLabels() {
+        val service = GitStatsSettingsService()
+
+        service.loadState(SettingModel(mode = StatsMode.DETAILED.legacyLabel, exclude = "dist"))
+
+        assertEquals(StatsMode.DETAILED.id, service.state.mode)
+        assertEquals(StatsMode.DETAILED, service.state.statsMode())
+    }
+
     fun testSettingsServiceIsAvailableFromProject() {
         assertNotNull(project.service<GitStatsSettingsService>())
     }
@@ -98,6 +115,90 @@ class MyPluginTest : BasePlatformTestCase() {
         assertEquals(3, model.getValueAt(0, 1))
         assertEquals(120, model.getValueAt(0, 2))
         assertFalse(model.isCellEditable(0, 0))
+    }
+
+    fun testGitLogCommandBuilderUsesExcludePathspecs() {
+        val command = GitLogCommandBuilder("/usr/bin/git").fastSummaryCommand(
+            "2026-06-01 00:00:00",
+            "2026-06-07 23:59:59",
+            listOf("vendor", "build/generated")
+        )
+
+        assertTrue(command.containsAll(listOf("--", ".", ":(exclude)vendor", ":(exclude)build/generated")))
+        assertEquals("/usr/bin/git", command.first())
+        assertEquals("log", command[1])
+    }
+
+    fun testGitLogParserParsesFastSummaryOutput() {
+        val stats = GitLogParser.parseFastSummary(
+            """
+            Ada
+            10	2	src/A.kt
+            -	-	assets/image.png
+            Lin
+            3	1	README.md
+            """.trimIndent()
+        )
+
+        assertEquals(2, stats.size)
+        assertEquals("Ada", stats[0].author)
+        assertEquals(10, stats[0].addedLines)
+        assertEquals(2, stats[0].deletedLines)
+        assertEquals(2, stats[0].modifiedFileCount)
+        assertEquals("Lin", stats[1].author)
+    }
+
+    fun testGitLogParserParsesDetailedOutput() {
+        val separator = "\u001F"
+        val stats = GitLogParser.parseDetailed(
+            """
+            ${separator}abc123${separator}2026-06-01 10:00:00 +0800${separator}Ada
+            12	4	src/A.kt
+            ${separator}def456${separator}2026-06-02 10:00:00 +0800${separator}Ada
+            1	0	src/B.kt
+            """.trimIndent()
+        )
+
+        assertEquals(1, stats.size)
+        assertEquals("Ada", stats[0].author)
+        assertEquals(2, stats[0].commitCount)
+        assertEquals(13, stats[0].addedLines)
+        assertEquals(4, stats[0].deletedLines)
+        assertEquals(2, stats[0].modifiedFileCount)
+        assertEquals("abc123", stats[0].commits[0].hash)
+        assertEquals("src/A.kt", stats[0].commits[0].files[0].fileName)
+    }
+
+    fun testDateRangesParseAndOrderRange() {
+        val range = DateRanges.parseDateRange("2026-06-07 - 2026-06-01")
+
+        assertNotNull(range)
+        assertEquals("2026-06-01", DateRanges.formatDate(range!!.first))
+        assertEquals("2026-06-07", DateRanges.formatDate(range.second))
+        assertNull(DateRanges.parseDateRange("2026-02-31 - 2026-03-01"))
+    }
+
+    fun testTableTextFormattersEscapeCsvAndNormalizeTsv() {
+        val snapshot = TableSnapshot(
+            headers = listOf("Author", "Note"),
+            rows = listOf(
+                listOf("Ada", "comma,value"),
+                listOf("Lin", "quote \"value\""),
+                listOf("Grace", "line\nbreak")
+            )
+        )
+
+        assertEquals(
+            "Author,Note\n" +
+                "Ada,\"comma,value\"\n" +
+                "Lin,\"quote \"\"value\"\"\"\n" +
+                "Grace,\"line\nbreak\"",
+            TableTextFormatters.toCsv(snapshot)
+        )
+        assertEquals(
+            "Author\tNote\nAda\tcomma,value\nLin\tquote \"value\"\nGrace\tline break",
+            TableTextFormatters.toTsv(snapshot)
+        )
     }
 
     fun testGitStatsServiceReturnsFailureForNonGitProject() {

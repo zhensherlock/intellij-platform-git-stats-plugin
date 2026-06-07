@@ -28,13 +28,8 @@ class GitStatsSettingsService : PersistentStateComponent<SettingModel> {
     }
 
     private fun SettingModel.normalized(): SettingModel {
-        val normalizedMode = when (mode) {
-            SettingModel.MODE_FAST_SUMMARY,
-            SettingModel.MODE_DETAILED -> mode
-            else -> SettingModel.MODE_FAST_SUMMARY
-        }
         return copy(
-            mode = normalizedMode,
+            mode = statsMode().id,
             exclude = SettingModel.parseExcludePaths(exclude).joinToString("\n")
         )
     }

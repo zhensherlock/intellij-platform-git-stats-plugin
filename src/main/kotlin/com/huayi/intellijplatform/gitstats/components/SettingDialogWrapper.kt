@@ -2,6 +2,7 @@ package com.huayi.intellijplatform.gitstats.components
 
 import com.huayi.intellijplatform.gitstats.MyBundle
 import com.huayi.intellijplatform.gitstats.models.SettingModel
+import com.huayi.intellijplatform.gitstats.models.StatsMode
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
@@ -23,7 +24,7 @@ import javax.swing.JComponent
 
 class SettingDialogWrapper(defaultSettingModel: SettingModel) : DialogWrapper(true) {
     var settingModel: SettingModel = defaultSettingModel
-    private lateinit var modeComboBox: ComboBox<String>
+    private lateinit var modeComboBox: ComboBox<ModeOption>
     private lateinit var excludePathsPanel: JBPanel<JBPanel<*>>
     private val excludePathFields = mutableListOf<JBTextField>()
 
@@ -37,10 +38,10 @@ class SettingDialogWrapper(defaultSettingModel: SettingModel) : DialogWrapper(tr
             preferredSize = Dimension(460, 235)
         }
 
-        modeComboBox = ComboBox<String>().apply {
-            addItem(SettingModel.MODE_FAST_SUMMARY)
-            addItem(SettingModel.MODE_DETAILED)
-            selectedItem = settingModel.mode
+        val modeOptions = StatsMode.entries.map { ModeOption(it, MyBundle.message(it.labelKey)) }
+        modeComboBox = ComboBox<ModeOption>().apply {
+            modeOptions.forEach { addItem(it) }
+            selectedItem = modeOptions.first { it.mode == settingModel.statsMode() }
         }
 
         excludePathFields.clear()
@@ -146,12 +147,16 @@ class SettingDialogWrapper(defaultSettingModel: SettingModel) : DialogWrapper(tr
     private fun rowBottomInset(row: Int) = if (row == 0) 8 else 0
 
     override fun doOKAction() {
-        settingModel.mode = modeComboBox.selectedItem as String
+        settingModel.mode = (modeComboBox.selectedItem as ModeOption).mode.id
         settingModel.exclude = excludePathFields
             .map { it.text.trim().replace('\\', '/') }
             .filter { it.isNotEmpty() }
             .distinct()
             .joinToString("\n")
         super.doOKAction()
+    }
+
+    private data class ModeOption(val mode: StatsMode, val label: String) {
+        override fun toString(): String = label
     }
 }
