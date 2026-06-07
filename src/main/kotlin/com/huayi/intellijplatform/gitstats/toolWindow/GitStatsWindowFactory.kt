@@ -1,11 +1,11 @@
 package com.huayi.intellijplatform.gitstats.toolWindow
 
 import com.huayi.intellijplatform.gitstats.MyBundle
+import com.huayi.intellijplatform.gitstats.components.RefreshButton
 import com.huayi.intellijplatform.gitstats.components.SettingAction
 import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.huayi.intellijplatform.gitstats.services.GitStatsService
 import com.huayi.intellijplatform.gitstats.utils.Utils
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -60,9 +60,10 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 rowHeight = 30
                 setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
             }
-            var refreshButton: JButton
+            var refreshButton: RefreshButton
             border = BorderFactory.createEmptyBorder(0, 0, 0, 0)
 
+            val loadingPanel = JBLoadingPanel(BorderLayout(), toolWindow.project)
             val contentPanel = JBPanel<JBPanel<*>>().apply {
                 val tablePanel = JBScrollPane(table).apply {
                     isFocusable = false
@@ -70,9 +71,6 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 }
                 add(tablePanel)
 
-                val loadingPanel = JBLoadingPanel(BorderLayout(), toolWindow.project).also {
-                    it.startLoading()
-                }
                 add(loadingPanel)
 
                 layout = CardLayout().also {
@@ -132,21 +130,34 @@ class GitStatsWindowFactory : ToolWindowFactory {
                     }
                 })
 //                add(LoadingButton(MyBundle.message("refreshButtonLabel")))
-                refreshButton = JButton(MyBundle.message("refreshButtonLabel"), AllIcons.Actions.Refresh).apply {
+                refreshButton = RefreshButton(
+                    MyBundle.message("refreshButtonLabel"),
+                    MyBundle.message("refreshButtonLoadingLabel"),
+                ).apply {
                     addActionListener {
+                        startLoading()
+                        loadingPanel.startLoading()
                         (contentPanel.layout as CardLayout).show(contentPanel, "content_loading")
-                        isEnabled = false
-                        text = MyBundle.message("refreshButtonLoadingLabel")
                         thread {
-                            if (settingModel.mode === "Top-speed") {
-                                table.model = service.getTopSpeedUserStats(startTime, endTime, settingModel)
-                            } else {
-                                table.model = service.getUserStats(startTime, endTime, settingModel)
-                            }
-                            SwingUtilities.invokeLater {
-                                (contentPanel.layout as CardLayout).show(contentPanel, "content_table")
-                                isEnabled = true
-                                text = MyBundle.message("refreshButtonLabel")
+                            try {
+                                val statsModel = if (settingModel.mode == "Top-speed") {
+                                    service.getTopSpeedUserStats(startTime, endTime, settingModel)
+                                } else {
+                                    service.getUserStats(startTime, endTime, settingModel)
+                                }
+                                SwingUtilities.invokeLater {
+                                    table.model = statsModel
+                                    loadingPanel.stopLoading()
+                                    (contentPanel.layout as CardLayout).show(contentPanel, "content_table")
+                                    stopLoading()
+                                }
+                            } catch (throwable: Throwable) {
+                                thisLogger().warn("Failed to refresh Git stats", throwable)
+                                SwingUtilities.invokeLater {
+                                    loadingPanel.stopLoading()
+                                    (contentPanel.layout as CardLayout).show(contentPanel, "content_table")
+                                    stopLoading()
+                                }
                             }
                         }
                     }
