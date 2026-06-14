@@ -69,9 +69,16 @@ class GitUtils(
         startDate: String?,
         endDate: String?,
         settingModel: SettingModel,
-        branchScope: BranchScope = BranchScope.CurrentBranch
+        branchScope: BranchScope = BranchScope.CurrentBranch,
+        includePaths: List<String> = emptyList()
     ): GitDataResult<Array<UserStats>> {
-        val command = commandBuilder.fastSummaryCommand(startDate, endDate, settingModel.excludePaths(), branchScope)
+        val command = commandBuilder.fastSummaryCommand(
+            startDate,
+            endDate,
+            settingModel.excludePaths(),
+            branchScope,
+            includePaths
+        )
         val commandResult = commandRunner.run(basePath, command, GIT_LOG_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         if (commandResult.isEmptyRepositoryLog()) {
             return GitDataResult.Success(emptyArray())
@@ -84,9 +91,16 @@ class GitUtils(
         startDate: String?,
         endDate: String?,
         settingModel: SettingModel,
-        branchScope: BranchScope = BranchScope.CurrentBranch
+        branchScope: BranchScope = BranchScope.CurrentBranch,
+        includePaths: List<String> = emptyList()
     ): GitDataResult<Array<UserStats>> {
-        val command = commandBuilder.detailedCommand(startDate, endDate, settingModel.excludePaths(), branchScope)
+        val command = commandBuilder.detailedCommand(
+            startDate,
+            endDate,
+            settingModel.excludePaths(),
+            branchScope,
+            includePaths
+        )
         val commandResult = commandRunner.run(basePath, command, GIT_LOG_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         if (commandResult.isEmptyRepositoryLog()) {
             return GitDataResult.Success(emptyArray())

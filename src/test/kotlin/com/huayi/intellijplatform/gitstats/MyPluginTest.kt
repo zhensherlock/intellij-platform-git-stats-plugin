@@ -4,6 +4,8 @@ import com.huayi.intellijplatform.gitstats.components.branchScope.BranchScopePre
 import com.huayi.intellijplatform.gitstats.components.branchScope.BranchScopeSelectPopup
 import com.huayi.intellijplatform.gitstats.components.filters.DateRangePopupActionGroupFactory
 import com.huayi.intellijplatform.gitstats.components.filters.GitLogFilterChip
+import com.huayi.intellijplatform.gitstats.components.filters.PathFilterPaths
+import com.huayi.intellijplatform.gitstats.components.filters.PathFilterPopupActionGroupFactory
 import com.huayi.intellijplatform.gitstats.components.filters.RefreshStatsAction
 import com.huayi.intellijplatform.gitstats.models.BranchInfo
 import com.huayi.intellijplatform.gitstats.models.BranchRefType
@@ -42,8 +44,10 @@ class MyPluginTest : BasePlatformTestCase() {
         assertEquals("Branch:", MyBundle.message("filterScopeLabel"))
         assertEquals("Branch", MyBundle.message("filterScopeButtonLabel"))
         assertEquals("User", MyBundle.message("filterAuthorButtonLabel"))
+        assertEquals("Paths", MyBundle.message("filterPathsButtonLabel"))
         assertEquals("No date range filter", MyBundle.message("filterDateEmptyTooltip"))
         assertEquals("Select...", MyBundle.message("datePickerSelectButton"))
+        assertEquals("Select in Tree...", MyBundle.message("filterPathsSelectInTreeAction"))
         assertEquals("Current Branch", MyBundle.message("branchScopeCurrent"))
         assertEquals("Custom Revision Range", MyBundle.message("branchScopeCustom"))
         assertEquals("Mode:", MyBundle.message("settingDialogModeLabel"))
@@ -64,6 +68,40 @@ class MyPluginTest : BasePlatformTestCase() {
         )
 
         assertEquals(listOf("vendor", "dist", "build/generated"), paths)
+    }
+
+    fun testPathFilterPathsAreNormalized() {
+        val paths = PathFilterPaths.parse(
+            """
+            src
+              docs
+            build\generated
+            src
+
+            """.trimIndent()
+        )
+
+        assertEquals(listOf("src", "docs", "build/generated"), paths)
+    }
+
+    fun testPathFilterPathsRejectUnsafePathspecs() {
+        val paths = PathFilterPaths.parse(
+            """
+            src
+            ./docs
+            docs//guide
+            ../outside
+            src/../outside
+            /tmp/project
+            C:\temp\project
+            C:temp\project
+            :(exclude)src
+            :!docs
+            .
+            """.trimIndent()
+        )
+
+        assertEquals(listOf("src", "docs", "docs/guide", "."), paths)
     }
 
     fun testSettingsServiceNormalizesAndCopiesSettings() {
@@ -205,6 +243,21 @@ class MyPluginTest : BasePlatformTestCase() {
         assertEquals("log", command[1])
     }
 
+    fun testGitLogCommandBuilderUsesIncludeAndExcludePathspecs() {
+        val command = GitLogCommandBuilder("/usr/bin/git").fastSummaryCommand(
+            "2026-06-01 00:00:00",
+            "2026-06-07 23:59:59",
+            listOf("vendor", "build/generated"),
+            includePaths = listOf("src", "docs")
+        )
+        val pathspecStartIndex = command.indexOf("--")
+
+        assertEquals(
+            listOf("src", "docs", ":(exclude)vendor", ":(exclude)build/generated"),
+            command.drop(pathspecStartIndex + 1)
+        )
+    }
+
     fun testGitLogCommandBuilderOmitsDateOptionsForAllTime() {
         val command = GitLogCommandBuilder("/usr/bin/git").fastSummaryCommand(
             null,
@@ -228,6 +281,22 @@ class MyPluginTest : BasePlatformTestCase() {
 
         assertEquals(
             listOf("Select...", "This Week", "Last 7 Days", "This Month"),
+            actionTexts
+        )
+    }
+
+    fun testPathFilterPopupContainsTextAndTreeSelectionActions() {
+        val popup = PathFilterPopupActionGroupFactory(
+            requestPathSelection = {},
+            requestTreeSelection = {},
+            isTreeSelectionAvailable = { true }
+        ).create()
+
+        val actionTexts = popup.childActionsOrStubs
+            .mapNotNull { it.templateText }
+
+        assertEquals(
+            listOf("Select...", "Select in Tree..."),
             actionTexts
         )
     }

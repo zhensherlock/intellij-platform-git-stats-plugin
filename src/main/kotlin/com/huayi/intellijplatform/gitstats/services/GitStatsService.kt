@@ -44,11 +44,12 @@ class GitStatsService(p: Project) {
         startTime: Date?,
         endTime: Date?,
         settingModel: SettingModel,
-        branchScope: BranchScope = BranchScope.CurrentBranch
+        branchScope: BranchScope = BranchScope.CurrentBranch,
+        includePaths: List<String> = emptyList()
     ): GitStatsResult {
         return when (settingModel.statsMode()) {
-            StatsMode.FAST_SUMMARY -> getTopSpeedUserStats(startTime, endTime, settingModel, branchScope)
-            StatsMode.DETAILED -> getUserStats(startTime, endTime, settingModel, branchScope)
+            StatsMode.FAST_SUMMARY -> getTopSpeedUserStats(startTime, endTime, settingModel, branchScope, includePaths)
+            StatsMode.DETAILED -> getUserStats(startTime, endTime, settingModel, branchScope, includePaths)
         }
     }
 
@@ -69,10 +70,11 @@ class GitStatsService(p: Project) {
         startTime: Date?,
         endTime: Date?,
         settingModel: SettingModel,
-        branchScope: BranchScope = BranchScope.CurrentBranch
+        branchScope: BranchScope = BranchScope.CurrentBranch,
+        includePaths: List<String> = emptyList()
     ): GitStatsResult {
         return collectStats(startTime, endTime, settingModel, StatsMode.DETAILED) { gitUtils, startDate, endDate ->
-            gitUtils.getUserStats(startDate, endDate, settingModel, branchScope)
+            gitUtils.getUserStats(startDate, endDate, settingModel, branchScope, includePaths)
         }
     }
 
@@ -80,10 +82,11 @@ class GitStatsService(p: Project) {
         startTime: Date?,
         endTime: Date?,
         settingModel: SettingModel,
-        branchScope: BranchScope = BranchScope.CurrentBranch
+        branchScope: BranchScope = BranchScope.CurrentBranch,
+        includePaths: List<String> = emptyList()
     ): GitStatsResult {
         return collectStats(startTime, endTime, settingModel, StatsMode.FAST_SUMMARY) { gitUtils, startDate, endDate ->
-            gitUtils.getTopSpeedUserStats(startDate, endDate, settingModel, branchScope)
+            gitUtils.getTopSpeedUserStats(startDate, endDate, settingModel, branchScope, includePaths)
         }
     }
 

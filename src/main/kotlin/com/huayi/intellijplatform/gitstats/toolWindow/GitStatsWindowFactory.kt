@@ -5,6 +5,7 @@ import com.huayi.intellijplatform.gitstats.components.branchScope.BranchScopeAct
 import com.huayi.intellijplatform.gitstats.components.SettingAction
 import com.huayi.intellijplatform.gitstats.components.filters.AuthorFilterAction
 import com.huayi.intellijplatform.gitstats.components.filters.DateRangeFilterAction
+import com.huayi.intellijplatform.gitstats.components.filters.PathFilterAction
 import com.huayi.intellijplatform.gitstats.components.filters.RefreshStatsAction
 import com.huayi.intellijplatform.gitstats.models.BranchScope
 import com.huayi.intellijplatform.gitstats.services.GitStatsSettingsService
@@ -69,6 +70,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
             var activeBranchScope: BranchScope = BranchScope.CurrentBranch
             var activeSorter: TableRowSorter<StatsTableModel>? = null
             var activeAuthorFilter = ""
+            var activePathFilter = emptyList<String>()
             val table = JBTable(StatsTableModel.empty()).apply {
                 font = Font("Microsoft YaHei", Font.PLAIN, 14)
                 tableHeader.font = Font("Microsoft YaHei", Font.BOLD, 14)
@@ -212,6 +214,10 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 activeAuthorFilter = author
                 applyAuthorFilter()
             }
+            val pathFilterAction = PathFilterAction(toolWindow.project) { paths ->
+                activePathFilter = paths
+                requestStatsRefresh()
+            }
             lateinit var refreshToolbar: ActionToolbar
             refreshAction = RefreshStatsAction { action ->
                 action.startLoading()
@@ -220,7 +226,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 contentLayout.show(contentPanel, CONTENT_LOADING)
                 thread {
                     val result = try {
-                        service.getStats(startTime, endTime, settingModel, activeBranchScope)
+                        service.getStats(startTime, endTime, settingModel, activeBranchScope, activePathFilter)
                     } catch (throwable: Throwable) {
                         thisLogger().warn("Failed to refresh Git stats", throwable)
                         GitStatsResult.Failure(
@@ -251,6 +257,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
                     add(dateRangeAction)
                     add(branchScopeAction)
                     add(authorFilterAction!!)
+                    add(pathFilterAction)
                 }
             )
             refreshToolbar = createToolbar(

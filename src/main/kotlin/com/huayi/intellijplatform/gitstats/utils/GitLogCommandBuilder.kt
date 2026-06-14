@@ -23,11 +23,13 @@ internal class GitLogCommandBuilder(private val gitExecutablePath: String) {
         startDate: String?,
         endDate: String?,
         excludePaths: List<String>,
-        branchScope: BranchScope = BranchScope.CurrentBranch
+        branchScope: BranchScope = BranchScope.CurrentBranch,
+        includePaths: List<String> = emptyList()
     ): List<String> {
         return buildLogCommand(
             listOf("--format=%aN") + buildDateArgs(startDate, endDate) + listOf("--numstat"),
             branchScope,
+            includePaths,
             excludePaths
         )
     }
@@ -36,7 +38,8 @@ internal class GitLogCommandBuilder(private val gitExecutablePath: String) {
         startDate: String?,
         endDate: String?,
         excludePaths: List<String>,
-        branchScope: BranchScope = BranchScope.CurrentBranch
+        branchScope: BranchScope = BranchScope.CurrentBranch,
+        includePaths: List<String> = emptyList()
     ): List<String> {
         return buildLogCommand(
             listOf(
@@ -44,6 +47,7 @@ internal class GitLogCommandBuilder(private val gitExecutablePath: String) {
                 "--pretty=format:%x1f%h%x1f%ad%x1f%aN"
             ) + buildDateArgs(startDate, endDate),
             branchScope,
+            includePaths,
             excludePaths
         )
     }
@@ -58,13 +62,14 @@ internal class GitLogCommandBuilder(private val gitExecutablePath: String) {
     private fun buildLogCommand(
         options: List<String>,
         branchScope: BranchScope,
+        includePaths: List<String>,
         excludePaths: List<String>
     ): List<String> {
         return listOf(gitExecutablePath, "log") +
             options +
             buildRevisionArgs(branchScope) +
             listOf("--") +
-            buildPathspecArgs(excludePaths)
+            buildPathspecArgs(includePaths, excludePaths)
     }
 
     private fun buildRevisionArgs(branchScope: BranchScope): List<String> {
@@ -79,6 +84,11 @@ internal class GitLogCommandBuilder(private val gitExecutablePath: String) {
     }
 
     internal fun buildPathspecArgs(excludePaths: List<String>): List<String> {
-        return listOf(".") + excludePaths.map { ":(exclude)$it" }
+        return buildPathspecArgs(emptyList(), excludePaths)
+    }
+
+    internal fun buildPathspecArgs(includePaths: List<String>, excludePaths: List<String>): List<String> {
+        val includedPathspecs = includePaths.ifEmpty { listOf(".") }
+        return includedPathspecs + excludePaths.map { ":(exclude)$it" }
     }
 }
