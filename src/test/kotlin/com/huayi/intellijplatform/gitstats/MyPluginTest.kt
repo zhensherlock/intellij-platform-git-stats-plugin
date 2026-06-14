@@ -25,6 +25,8 @@ import com.huayi.intellijplatform.gitstats.utils.GitLogCommandBuilder
 import com.huayi.intellijplatform.gitstats.utils.GitLogParser
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.util.ui.UIUtil
+import java.awt.event.MouseEvent
 import java.io.File
 import java.util.Calendar
 import javax.swing.JLabel
@@ -247,6 +249,27 @@ class MyPluginTest : BasePlatformTestCase() {
         val selectedLabelY = chip.firstFilterLabelY("Date")
 
         assertEquals(emptyLabelY, selectedLabelY)
+    }
+
+    fun testFilterChipClearingResetsHoveredLabelColor() = runOnEdt {
+        lateinit var chip: GitLogFilterChip
+        chip = GitLogFilterChip(
+            onOpenPopup = {},
+            onClear = { chip.update(GitLogFilterChip.Model("Date", null, null, null)) }
+        )
+
+        chip.update(GitLogFilterChip.Model("Date", "This Week", null, null))
+        val clearLabel = chip.components
+            .filterIsInstance<JLabel>()
+            .first { it.icon != null }
+
+        dispatchMouseEvent(clearLabel, MouseEvent.MOUSE_ENTERED)
+        assertTrue(chip.isHovered())
+
+        dispatchMouseEvent(clearLabel, MouseEvent.MOUSE_CLICKED)
+
+        assertFalse(chip.isHovered())
+        assertEquals(UIUtil.getContextHelpForeground(), chip.firstFilterLabel("Date").foreground)
     }
 
     fun testGitLogCommandBuilderUsesBranchScopeBeforePathspecs() {
@@ -535,10 +558,29 @@ class MyPluginTest : BasePlatformTestCase() {
     }
 
     private fun GitLogFilterChip.firstFilterLabelY(text: String): Int {
+        return firstFilterLabel(text).y
+    }
+
+    private fun GitLogFilterChip.firstFilterLabel(text: String): JLabel {
         return components
             .filterIsInstance<JLabel>()
             .first { it.text?.startsWith(text) == true }
-            .y
+    }
+
+    private fun dispatchMouseEvent(label: JLabel, id: Int) {
+        val event = MouseEvent(label, id, System.currentTimeMillis(), 0, 1, 1, 1, false, MouseEvent.BUTTON1)
+        label.mouseListeners.forEach { listener ->
+            when (id) {
+                MouseEvent.MOUSE_ENTERED -> listener.mouseEntered(event)
+                MouseEvent.MOUSE_CLICKED -> listener.mouseClicked(event)
+            }
+        }
+    }
+
+    private fun GitLogFilterChip.isHovered(): Boolean {
+        val field = GitLogFilterChip::class.java.getDeclaredField("hovered")
+        field.isAccessible = true
+        return field.getBoolean(this)
     }
 
     private fun dateOf(year: Int, month: Int, day: Int) = Calendar.getInstance().apply {

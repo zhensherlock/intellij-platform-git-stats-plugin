@@ -109,6 +109,8 @@ internal class GitLogFilterChip(
                 override fun mouseClicked(e: MouseEvent) {
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         e.consume()
+                        setHovered(false)
+                        icon = AllIcons.Actions.Close
                         onClear()
                     }
                 }
