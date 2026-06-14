@@ -15,9 +15,26 @@ Git contribution statistics for IntelliJ Platform IDEs.
 [![][github-license-shield]][github-license-link]
 
 <!-- Plugin description -->
-GitStats helps you understand code-writing activity in the current IDE project by reading Git history, grouping source code changes within a selected time range, and presenting author-level statistics in a tool window. It shows commit count, added lines, deleted lines, and modified files so you can quickly review project contribution activity without leaving the IDE.
+**Git activity statistics for JetBrains IDEs.**
 
-GitStats 通过读取当前 IDE 项目的 Git 历史，按所选时间范围统计源码变更，并在工具窗口中展示作者维度的数据。它会呈现提交数、添加行数、删除行数和修改文件数，让你无需离开 IDE 就能快速了解项目贡献活跃度。
+GitStats turns the Git history of your current project into a clear author-level activity report inside the IDE. Review contribution trends, compare code changes across teammates, and share the visible results without leaving your development workflow.
+
+- **Author-level summaries:** compare commits, added lines, deleted lines, and modified files.
+- **Flexible date ranges:** inspect this week, the last 7 days, this month, or a custom range.
+- **Author filtering:** narrow large repositories down to the contributors you want to review.
+- **Two calculation modes:** use Fast Summary for quick line-based ranking, or Detailed mode when commit counts matter.
+- **Noise control:** exclude generated folders, vendor code, build outputs, or any project-relative paths.
+- **Shareable results:** copy selected rows, copy the full table, or export the visible statistics as CSV.
+
+### Getting Started
+
+1. Open a project backed by a Git repository in any supported JetBrains IDE.
+2. Open the **Git Stats** tool window.
+3. Choose a date range and optionally filter by author.
+4. Click **Refresh** to calculate the report.
+5. Use the settings action to switch modes or exclude noisy paths such as generated files and build outputs.
+
+**Privacy-friendly by design:** GitStats uses the Git executable configured in your IDE and reads only local repository history. No source code, commit data, or statistics are sent to external services.
 <!-- Plugin description end -->
 
 ## Why GitStats?

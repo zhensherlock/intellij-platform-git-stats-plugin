@@ -2,50 +2,59 @@
 
 ## Commands
 
-- Use the Gradle wrapper with JDK 21; CI uses Zulu 21.
+- Use `./gradlew` with JDK 21; CI uses Zulu 21 and the wrapper is Gradle 9.5.0.
 - Run the plugin in an IDE sandbox with `./gradlew runIde`.
-- Main local verification is `./gradlew check`; CI runs `./gradlew buildPlugin`, `./gradlew check`, and `./gradlew verifyPlugin` as separate jobs.
-- Run one focused test with `./gradlew test --tests 'com.huayi.intellijplatform.gitstats.MyPluginTest.testExcludePathsAreNormalized' --console=plain` and replace the method/class filter as needed.
+- Default local verification is `./gradlew check`.
+- CI runs `./gradlew buildPlugin`, `./gradlew check`, and `./gradlew verifyPlugin` as separate jobs.
+- Run one focused test with `./gradlew test --tests 'com.huayi.intellijplatform.gitstats.MyPluginTest.testExcludePathsAreNormalized' --console=plain`; replace the filter as needed.
 - `./gradlew buildPlugin` writes `build/distributions/GitStats-<version>.zip`.
-- `verifyPlugin` checks the IDEs configured in `build.gradle.kts`: IC from `platformVersion` plus IDEA `2026.1.3`; it can be slower than `check`.
-- JetBrains sandbox logs are under `.intellijPlatform/sandbox/*/*/log/idea.log`; test sandbox logs use `log-test/idea.log`.
+- `verifyPlugin` checks IC from `platformVersion` plus IDEA `2026.1.3`; expect it to be slower than `check`.
+- IDE sandbox logs are under `.intellijPlatform/sandbox/*/*/log/idea.log`; test sandbox logs use `log-test/idea.log`.
 
 ## Project Shape
 
-- This is a single-module Kotlin IntelliJ Platform plugin, not a multi-package repo.
+- This is a single-module Kotlin IntelliJ Platform plugin.
 - `src/main/resources/META-INF/plugin.xml` registers the `Git Stats` tool window, notification group, resource bundle, and required `Git4Idea` dependency.
-- `src/main/kotlin/com/huayi/intellijplatform/gitstats/toolWindow/GitStatsWindowFactory.kt` owns the Swing tool window UI, date/author filters, background refresh, and result rendering.
-- `src/main/kotlin/com/huayi/intellijplatform/gitstats/services/GitStatsService.kt` validates the project/repo, maps settings/date ranges to `GitStatsResult`, and delegates Git history work to `GitUtils`.
-- `GitUtils` does not use JGit; it gets the IDE-configured Git executable from `Git4Idea`, builds `git log --numstat` commands via `GitLogCommandBuilder`, executes through `CommandRunner`, and parses through `GitLogParser`.
-- Table display details live in `src/main/kotlin/com/huayi/intellijplatform/gitstats/toolWindow/StatsTable*`; settings persistence lives in project-level `GitStatsSettingsService`.
-- User-visible strings live in `src/main/resources/messages/MyBundle.properties`; keep new UI labels there instead of hardcoding them.
+- `GitStatsWindowFactory.kt` owns the tool window shell, action-based filter toolbar, background refresh threading, and result rendering.
+- `GitStatsService.kt` validates the project/repository, maps filters/settings to `GitStatsResult`, and delegates Git history work to `GitUtils`.
+- `GitUtils` uses the IDE-configured Git executable from `Git4Idea`; it builds argument lists with `GitLogCommandBuilder`, executes through `CommandRunner`, and parses with `GitLogParser`. It does not use JGit.
+- Table display/copy/export behavior lives in `toolWindow/StatsTable*` and `TableSnapshot.kt`.
+- Settings persistence is project-level `GitStatsSettingsService`, stored in the workspace file.
+- User-visible strings live in `src/main/resources/messages/MyBundle.properties`; add UI labels there instead of hardcoding.
 
-## UI Guidelines
+## IntelliJ and Gradle Gotchas
 
-- Prefer IntelliJ Platform native UI APIs and components for plugin UI, such as `JB*` components, `DialogWrapper`, `Messages`, `FileChooserFactory`, `ActionSystem`, and `JBPopupFactory`, instead of raw Swing widgets when an IntelliJ-native equivalent exists.
-- Keep UI behavior consistent with IDE themes, spacing, hover states, keyboard shortcuts, and accessibility expectations.
-
-## IntelliJ/Gradle Gotchas
-
-- Plugin version, target platform, and supported build range live in `gradle.properties`, not in `plugin.xml`.
+- Plugin version, target platform, and supported build range live in `gradle.properties`, not `plugin.xml`.
 - Current compatibility config is `platformVersion=2024.2.6`, `pluginSinceBuild=242`, and `pluginUntilBuild=261.*`.
-- The IntelliJ Gradle plugin derives the built descriptor version/build range from Gradle config; do not duplicate `<version>` or `<idea-version>` in source `plugin.xml`.
-- `build.gradle.kts` depends on bundled `Git4Idea`, and `plugin.xml` declares `Git4Idea`; keep both in sync if Git integration changes.
+- The IntelliJ Gradle plugin derives descriptor version/build range from Gradle config; do not add `<version>` or `<idea-version>` to source `plugin.xml`.
+- Keep bundled `Git4Idea` in `build.gradle.kts` and the `Git4Idea` dependency in `plugin.xml` in sync.
 - Kotlin stdlib bundling is disabled with `kotlin.stdlib.default.dependency=false`.
-- Gradle configuration cache and build cache are enabled; prefer cache-friendly task wiring when editing build scripts.
+- Gradle configuration cache and build cache are enabled; avoid task wiring that breaks them.
+- Prefer IntelliJ-native UI components/APIs (`JB*`, `DialogWrapper`, `Messages`, `FileChooserFactory`, `ActionSystem`, `JBPopupFactory`) over raw Swing equivalents when available.
 
 ## Git Stats Behavior
 
 - Excluded paths are newline-delimited, trimmed, deduplicated, and normalized from `\` to `/` in `SettingModel`.
-- Stored settings use mode ids `fast_summary` and `detailed`; `GitStatsSettingsService` normalizes old labels like `Fast Summary`/`Detailed` for compatibility.
-- `GitLogCommandBuilder` passes Git pathspecs as argument-list entries after `--`, e.g. `.`, `:(exclude)path`; do not join the command into a shell string or add shell quoting.
-- `Fast Summary` mode omits commit count and sorts by added lines; `Detailed` mode includes commit counts and per-commit parsing.
+- Include path filters are normalized by `PathFilterPaths`; absolute paths, Windows drive paths, parent traversal, and raw Git magic pathspecs are rejected.
+- Stored settings use mode ids `fast_summary` and `detailed`; `GitStatsSettingsService` normalizes legacy labels like `Fast Summary`/`Detailed`.
+- `GitLogCommandBuilder` must return argument-list entries, never a shell string. Revision args go before `--`; pathspecs go after `--`.
+- Pathspecs default to `.` when no include paths are selected; include paths precede `:(exclude)path` entries.
+- Branch scopes include current branch, `HEAD`, all local branches via `--branches`, selected local/remote refs, and a validated custom revision range.
+- Fast Summary mode omits commit count and sorts by added lines; Detailed mode includes commit counts and per-commit parsing.
 - Git repo checks time out after 10 seconds; Git log commands time out after 60 seconds and redirect stderr into stdout before parsing.
 
 ## Tests and Workflow
 
-- Existing tests extend `BasePlatformTestCase`, so focused tests still prepare the IntelliJ test sandbox.
-- Swing component tests should run UI mutations on the EDT; `MyPluginTest.runOnEdt` shows the current pattern.
+- Tests extend `BasePlatformTestCase`, so even focused tests prepare the IntelliJ test sandbox.
+- Swing component tests should mutate UI on the EDT; reuse `MyPluginTest.runOnEdt`.
+- `settings.gradle.kts` installs a `commit-msg` hook that enforces Conventional Commits; `release` is an allowed type.
 - `CLAUDE.md` delegates shared guidance back to this file; keep common agent instructions here.
-- `settings.gradle.kts` installs a `commit-msg` hook that enforces Conventional Commits; allowed types include `release`.
-- Release notes come from `CHANGELOG.md`: build CI creates a draft release from `./gradlew getChangelog --unreleased`, and release CI may patch `CHANGELOG.md` from the GitHub release body before `publishPlugin`.
+
+## Release Workflow
+
+- For a new plugin release, update `version` in `gradle.properties` and write notes under `## [Unreleased]` in `CHANGELOG.md`.
+- Do not manually add `## [x.y.z] - YYYY-MM-DD` during the pre-release/version-bump commit.
+- Keep the `[Unreleased]` compare link pointing from the latest released tag to `HEAD`, for example `v0.8.0...HEAD`.
+- The build workflow reads Gradle `version`, runs `./gradlew getChangelog --unreleased`, and creates a draft GitHub release named `v$VERSION`.
+- Publishing or prereleasing that draft triggers release CI: it checks out the tag, may run `patchChangelog` from the release body, runs `publishPlugin`, uploads the distribution, then opens the changelog-update PR.
+- If release CI fails only while creating the changelog-update PR after publishing/upload succeeded, create that branch/PR manually instead of rerunning the whole release job.

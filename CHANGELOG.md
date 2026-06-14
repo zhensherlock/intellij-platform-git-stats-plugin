@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+- ✨ Add branch scope filtering for current branch, all branches, and custom ranges
+- ✨ Add include path filtering alongside exclude-path support
+- ✨ Move Git Stats filters into action-based toolbar popups
+- 🐛 Stabilize filter chip labels and hover state when filters change or are cleared
+- 🧹 Tighten toolbar spacing and refresh plugin docs, roadmap, and release automation guidance
+
+## [0.8.0] - 2026-06-07
+
 - ✨ Add date range filtering for Git Stats refreshes
 - ✨ Add author filtering and row actions to the stats table
 - ✨ Persist stats mode and excluded paths, including support for multiple exclude entries
@@ -66,8 +74,8 @@
 
 - Displays the code statistics table
 
-[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.8.0...HEAD
-[0.8.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.7.0...0.8.0
+[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.2...0.7.0
 [0.6.2]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.6.0...0.6.1

@@ -4,8 +4,25 @@
     <name>GitStats</name>
     <vendor>huayi</vendor>
     <description><![CDATA[
-        <p>GitStats helps you understand code activity in the current IDE project. It counts added lines, deleted lines, modified files, and commits within a selected date range, then groups the results by author.</p>
-        <p>GitStats 通过统计当前 IDE 打开的项目目录中的源代码修改情况，帮助用户了解项目代码编写情况。它会按时间段分组统计添加代码行数、删除代码行数、修改文件数量，并以列表形式展示结果。</p>
+        <p><strong>Git activity statistics for JetBrains IDEs.</strong></p>
+        <p>GitStats turns the Git history of your current project into a clear author-level activity report inside the IDE. Review contribution trends, compare code changes across teammates, and share the visible results without leaving your development workflow.</p>
+        <ul>
+            <li><strong>Author-level summaries:</strong> compare commits, added lines, deleted lines, and modified files.</li>
+            <li><strong>Flexible date ranges:</strong> inspect this week, the last 7 days, this month, or a custom range.</li>
+            <li><strong>Focused filtering:</strong> narrow reports by date range, branch scope, author, and project-relative paths.</li>
+            <li><strong>Two calculation modes:</strong> use Fast Summary for quick line-based ranking, or Detailed mode when commit counts matter.</li>
+            <li><strong>Noise control:</strong> exclude generated folders, vendor code, build outputs, or any project-relative paths.</li>
+            <li><strong>Shareable results:</strong> copy selected rows, copy the full table, or export the visible statistics as CSV.</li>
+        </ul>
+        <h3>Getting Started</h3>
+        <ol>
+            <li>Open a project backed by a Git repository in any supported JetBrains IDE.</li>
+            <li>Open the <strong>Git Stats</strong> tool window.</li>
+            <li>Choose a date range, branch scope, author, or paths to focus the report.</li>
+            <li>Click <strong>Refresh</strong> to calculate the report.</li>
+            <li>Use the settings action to switch modes or exclude noisy paths such as generated files and build outputs.</li>
+        </ol>
+        <p><strong>Privacy-friendly by design:</strong> GitStats uses the Git executable configured in your IDE and reads only local repository history. No source code, commit data, or statistics are sent to external services.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
