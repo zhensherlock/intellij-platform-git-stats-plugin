@@ -9,7 +9,7 @@
         <ul>
             <li><strong>Author-level summaries:</strong> compare commits, added lines, deleted lines, and modified files.</li>
             <li><strong>Flexible date ranges:</strong> inspect this week, the last 7 days, this month, or a custom range.</li>
-            <li><strong>Author filtering:</strong> narrow large repositories down to the contributors you want to review.</li>
+            <li><strong>Focused filtering:</strong> narrow reports by date range, branch scope, author, and project-relative paths.</li>
             <li><strong>Two calculation modes:</strong> use Fast Summary for quick line-based ranking, or Detailed mode when commit counts matter.</li>
             <li><strong>Noise control:</strong> exclude generated folders, vendor code, build outputs, or any project-relative paths.</li>
             <li><strong>Shareable results:</strong> copy selected rows, copy the full table, or export the visible statistics as CSV.</li>
@@ -18,7 +18,7 @@
         <ol>
             <li>Open a project backed by a Git repository in any supported JetBrains IDE.</li>
             <li>Open the <strong>Git Stats</strong> tool window.</li>
-            <li>Choose a date range and optionally filter by author.</li>
+            <li>Choose a date range, branch scope, author, or paths to focus the report.</li>
             <li>Click <strong>Refresh</strong> to calculate the report.</li>
             <li>Use the settings action to switch modes or exclude noisy paths such as generated files and build outputs.</li>
         </ol>
