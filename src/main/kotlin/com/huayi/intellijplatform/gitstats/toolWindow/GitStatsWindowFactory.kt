@@ -337,7 +337,7 @@ class GitStatsWindowFactory : ToolWindowFactory {
                 filterToolbar: ActionToolbar,
                 refreshToolbar: ActionToolbar
             ) = JBPanel<JBPanel<*>>(BorderLayout()).apply {
-                border = BorderFactory.createEmptyBorder(2, 10, 2, 10)
+                border = BorderFactory.createEmptyBorder(2, 0, 2, 0)
                 maximumSize = Dimension(Int.MAX_VALUE, 36)
                 filterToolbar.targetComponent = this
                 refreshToolbar.targetComponent = this
