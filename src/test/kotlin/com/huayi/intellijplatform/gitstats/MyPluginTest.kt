@@ -3,6 +3,7 @@ package com.huayi.intellijplatform.gitstats
 import com.huayi.intellijplatform.gitstats.components.branchScope.BranchScopePresentation
 import com.huayi.intellijplatform.gitstats.components.branchScope.BranchScopeSelectPopup
 import com.huayi.intellijplatform.gitstats.components.filters.DateRangePopupActionGroupFactory
+import com.huayi.intellijplatform.gitstats.components.filters.GitLogFilterChip
 import com.huayi.intellijplatform.gitstats.components.filters.RefreshStatsAction
 import com.huayi.intellijplatform.gitstats.models.BranchInfo
 import com.huayi.intellijplatform.gitstats.models.BranchRefType
@@ -26,6 +27,7 @@ import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.io.File
 import java.util.Calendar
+import javax.swing.JLabel
 import javax.swing.JTable
 import javax.swing.SwingUtilities
 import javax.swing.table.TableRowSorter
@@ -226,6 +228,25 @@ class MyPluginTest : BasePlatformTestCase() {
             listOf("Select...", "This Week", "Last 7 Days", "This Month"),
             actionTexts
         )
+    }
+
+    fun testFilterChipKeepsLabelVerticalPositionWhenValueChanges() = runOnEdt {
+        val chip = GitLogFilterChip(
+            onOpenPopup = {},
+            onClear = {}
+        )
+
+        chip.update(GitLogFilterChip.Model("Date", null, null, null))
+        chip.setSize(chip.preferredSize)
+        chip.doLayout()
+        val emptyLabelY = chip.firstFilterLabelY("Date")
+
+        chip.update(GitLogFilterChip.Model("Date", "This Week", null, null))
+        chip.setSize(chip.preferredSize)
+        chip.doLayout()
+        val selectedLabelY = chip.firstFilterLabelY("Date")
+
+        assertEquals(emptyLabelY, selectedLabelY)
     }
 
     fun testGitLogCommandBuilderUsesBranchScopeBeforePathspecs() {
@@ -511,6 +532,13 @@ class MyPluginTest : BasePlatformTestCase() {
         } else {
             SwingUtilities.invokeAndWait(action)
         }
+    }
+
+    private fun GitLogFilterChip.firstFilterLabelY(text: String): Int {
+        return components
+            .filterIsInstance<JLabel>()
+            .first { it.text?.startsWith(text) == true }
+            .y
     }
 
     private fun dateOf(year: Int, month: Int, day: Int) = Calendar.getInstance().apply {

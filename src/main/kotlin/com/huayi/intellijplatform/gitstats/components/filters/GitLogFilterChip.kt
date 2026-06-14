@@ -7,9 +7,10 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
+import java.awt.Container
 import java.awt.Cursor
 import java.awt.Dimension
-import java.awt.FlowLayout
+import java.awt.LayoutManager
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
@@ -19,7 +20,7 @@ import javax.swing.SwingUtilities
 internal class GitLogFilterChip(
     private val onOpenPopup: (JComponent) -> Unit,
     private val onClear: () -> Unit
-) : JBPanel<GitLogFilterChip>(FlowLayout(FlowLayout.LEFT, 0, 0)) {
+) : JBPanel<GitLogFilterChip>(CenteredRowLayout { JBUI.scale(CHIP_HEIGHT) }) {
     private var hovered = false
     private var label: JBLabel? = null
     private var valueLabel: JBLabel? = null
@@ -148,5 +149,45 @@ internal class GitLogFilterChip(
 
     private companion object {
         private const val CHIP_HEIGHT = 28
+    }
+}
+
+private class CenteredRowLayout(
+    private val preferredHeight: () -> Int
+) : LayoutManager {
+    override fun addLayoutComponent(name: String?, component: java.awt.Component?) = Unit
+
+    override fun removeLayoutComponent(component: java.awt.Component?) = Unit
+
+    override fun preferredLayoutSize(parent: Container): Dimension = layoutSize(parent, usePreferredSize = true)
+
+    override fun minimumLayoutSize(parent: Container): Dimension = layoutSize(parent, usePreferredSize = false)
+
+    override fun layoutContainer(parent: Container) {
+        synchronized(parent.treeLock) {
+            val insets = parent.insets
+            val contentHeight = parent.height - insets.top - insets.bottom
+            var x = insets.left
+            parent.components
+                .filter { it.isVisible }
+                .forEach { component ->
+                    val size = component.preferredSize
+                    val y = insets.top + ((contentHeight - size.height) / 2).coerceAtLeast(0)
+                    component.setBounds(x, y, size.width, size.height)
+                    x += size.width
+                }
+        }
+    }
+
+    private fun layoutSize(parent: Container, usePreferredSize: Boolean): Dimension {
+        synchronized(parent.treeLock) {
+            val insets = parent.insets
+            val width = parent.components
+                .filter { it.isVisible }
+                .sumOf { component ->
+                    if (usePreferredSize) component.preferredSize.width else component.minimumSize.width
+                }
+            return Dimension(insets.left + width + insets.right, preferredHeight())
+        }
     }
 }
