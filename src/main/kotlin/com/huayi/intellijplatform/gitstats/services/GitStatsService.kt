@@ -1,6 +1,8 @@
 package com.huayi.intellijplatform.gitstats.services
 
 import com.huayi.intellijplatform.gitstats.MyBundle
+import com.huayi.intellijplatform.gitstats.models.BranchInfo
+import com.huayi.intellijplatform.gitstats.models.BranchScope
 import com.huayi.intellijplatform.gitstats.models.SettingModel
 import com.huayi.intellijplatform.gitstats.models.StatsMode
 import com.intellij.openapi.components.Service
@@ -38,31 +40,59 @@ class GitStatsService(p: Project) {
         project = p
     }
 
-    fun getStats(startTime: Date, endTime: Date, settingModel: SettingModel): GitStatsResult {
+    fun getStats(
+        startTime: Date?,
+        endTime: Date?,
+        settingModel: SettingModel,
+        branchScope: BranchScope = BranchScope.CurrentBranch
+    ): GitStatsResult {
         return when (settingModel.statsMode()) {
-            StatsMode.FAST_SUMMARY -> getTopSpeedUserStats(startTime, endTime, settingModel)
-            StatsMode.DETAILED -> getUserStats(startTime, endTime, settingModel)
+            StatsMode.FAST_SUMMARY -> getTopSpeedUserStats(startTime, endTime, settingModel, branchScope)
+            StatsMode.DETAILED -> getUserStats(startTime, endTime, settingModel, branchScope)
         }
     }
 
-    fun getUserStats(startTime: Date, endTime: Date, settingModel: SettingModel): GitStatsResult {
+    fun getBranchInfo(): GitDataResult<BranchInfo> {
+        if (!Utils.checkDirectoryExists(project.basePath)) {
+            return GitDataResult.Failure(GitFailureReason.NOT_GIT_REPOSITORY)
+        }
+        val gitUtils = runCatching { GitUtils(project) }.getOrElse {
+            return GitDataResult.Failure(GitFailureReason.GIT_UNAVAILABLE, it.stackTraceToString())
+        }
+        return when (val repositoryResult = gitUtils.checkRepository()) {
+            is GitDataResult.Failure -> repositoryResult
+            is GitDataResult.Success -> gitUtils.getBranchInfo()
+        }
+    }
+
+    fun getUserStats(
+        startTime: Date?,
+        endTime: Date?,
+        settingModel: SettingModel,
+        branchScope: BranchScope = BranchScope.CurrentBranch
+    ): GitStatsResult {
         return collectStats(startTime, endTime, settingModel, StatsMode.DETAILED) { gitUtils, startDate, endDate ->
-            gitUtils.getUserStats(startDate, endDate, settingModel)
+            gitUtils.getUserStats(startDate, endDate, settingModel, branchScope)
         }
     }
 
-    fun getTopSpeedUserStats(startTime: Date, endTime: Date, settingModel: SettingModel): GitStatsResult {
+    fun getTopSpeedUserStats(
+        startTime: Date?,
+        endTime: Date?,
+        settingModel: SettingModel,
+        branchScope: BranchScope = BranchScope.CurrentBranch
+    ): GitStatsResult {
         return collectStats(startTime, endTime, settingModel, StatsMode.FAST_SUMMARY) { gitUtils, startDate, endDate ->
-            gitUtils.getTopSpeedUserStats(startDate, endDate, settingModel)
+            gitUtils.getTopSpeedUserStats(startDate, endDate, settingModel, branchScope)
         }
     }
 
     private fun collectStats(
-        startTime: Date,
-        endTime: Date,
+        startTime: Date?,
+        endTime: Date?,
         settingModel: SettingModel,
         mode: StatsMode,
-        loadStats: (GitUtils, String, String) -> GitDataResult<Array<UserStats>>
+        loadStats: (GitUtils, String?, String?) -> GitDataResult<Array<UserStats>>
     ): GitStatsResult {
         if (!Utils.checkDirectoryExists(project.basePath)) {
             return GitStatsResult.Failure(
@@ -84,8 +114,9 @@ class GitStatsService(p: Project) {
             is GitDataResult.Success -> Unit
         }
 
-        val startDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(startTime)
-        val endDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(endTime)
+        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val startDate = startTime?.let { formatter.format(it) }
+        val endDate = endTime?.let { formatter.format(it) }
         return when (val statsResult = loadStats(gitUtils, startDate, endDate)) {
             is GitDataResult.Failure -> statsResult.toGitStatsResult()
             is GitDataResult.Success -> {

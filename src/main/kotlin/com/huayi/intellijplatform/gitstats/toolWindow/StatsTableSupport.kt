@@ -2,7 +2,6 @@ package com.huayi.intellijplatform.gitstats.toolWindow
 
 import com.huayi.intellijplatform.gitstats.MyBundle
 import java.text.NumberFormat
-import java.util.regex.Pattern
 import javax.swing.JTable
 import javax.swing.RowFilter
 import javax.swing.RowSorter
@@ -41,8 +40,9 @@ internal object StatsTableSupport {
     }
 
     fun visibleRows(table: JTable, model: StatsTableModel): List<StatsTableRow> {
-        return (0 until table.rowCount).map { viewRow ->
-            model.rowAt(table.convertRowIndexToModel(viewRow))
+        return (0 until table.rowCount).mapNotNull { viewRow ->
+            val modelRow = table.convertRowIndexToModel(viewRow)
+            model.takeIf { modelRow in 0 until it.rowCount }?.rowAt(modelRow)
         }
     }
 
@@ -57,10 +57,19 @@ internal object StatsTableSupport {
         if (authorColumn < 0) {
             return null
         }
-        val pattern = Pattern.compile(Pattern.quote(authorFilter), Pattern.CASE_INSENSITIVE)
+        val selectedAuthors = authorFilter
+            .split('|', '\n')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+        if (selectedAuthors.isEmpty()) {
+            return null
+        }
         return object : RowFilter<StatsTableModel, Int>() {
             override fun include(entry: Entry<out StatsTableModel, out Int>): Boolean {
-                return pattern.matcher(entry.getStringValue(authorColumn)).find()
+                val author = entry.getStringValue(authorColumn)
+                return selectedAuthors.any { selectedAuthor ->
+                    author.equals(selectedAuthor, ignoreCase = true)
+                }
             }
         }
     }

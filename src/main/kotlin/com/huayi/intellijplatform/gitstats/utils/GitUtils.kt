@@ -3,6 +3,8 @@ package com.huayi.intellijplatform.gitstats.utils
 import git4idea.config.GitExecutableManager
 import java.util.concurrent.TimeUnit
 import com.intellij.openapi.project.Project
+import com.huayi.intellijplatform.gitstats.models.BranchInfo
+import com.huayi.intellijplatform.gitstats.models.BranchScope
 import com.huayi.intellijplatform.gitstats.models.SettingModel
 
 class GitUtils(
@@ -17,7 +19,7 @@ class GitUtils(
         val commandResult = commandRunner.run(
             basePath,
             commandBuilder.checkRepositoryCommand(),
-            10L,
+            GIT_REPOSITORY_TIMEOUT_SECONDS,
             TimeUnit.SECONDS
         )
         commandFailure(commandResult)?.let { return it }
@@ -28,10 +30,48 @@ class GitUtils(
         }
     }
 
+    fun getBranchInfo(): GitDataResult<BranchInfo> {
+        val currentBranchResult = commandRunner.run(
+            basePath,
+            commandBuilder.currentBranchCommand(),
+            GIT_REPOSITORY_TIMEOUT_SECONDS,
+            TimeUnit.SECONDS
+        )
+        commandFailure(currentBranchResult)?.let { return it }
+
+        val localBranchesResult = commandRunner.run(
+            basePath,
+            commandBuilder.localBranchesCommand(),
+            GIT_REPOSITORY_TIMEOUT_SECONDS,
+            TimeUnit.SECONDS
+        )
+        commandFailure(localBranchesResult)?.let { return it }
+
+        val remoteBranchesResult = commandRunner.run(
+            basePath,
+            commandBuilder.remoteBranchesCommand(),
+            GIT_REPOSITORY_TIMEOUT_SECONDS,
+            TimeUnit.SECONDS
+        )
+        commandFailure(remoteBranchesResult)?.let { return it }
+
+        return GitDataResult.Success(
+            BranchInfo(
+                currentBranch = currentBranchResult.output.trim().ifEmpty { null },
+                localBranches = parseBranchLines(localBranchesResult.output),
+                remoteBranches = parseBranchLines(remoteBranchesResult.output)
+                    .filterNot { it.endsWith("/HEAD") }
+            )
+        )
+    }
+
     fun getTopSpeedUserStats(
-        startDate: String, endDate: String, settingModel: SettingModel
+        startDate: String?,
+        endDate: String?,
+        settingModel: SettingModel,
+        branchScope: BranchScope = BranchScope.CurrentBranch
     ): GitDataResult<Array<UserStats>> {
-        val command = commandBuilder.fastSummaryCommand(startDate, endDate, settingModel.excludePaths())
+        val command = commandBuilder.fastSummaryCommand(startDate, endDate, settingModel.excludePaths(), branchScope)
         val commandResult = commandRunner.run(basePath, command, GIT_LOG_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         if (commandResult.isEmptyRepositoryLog()) {
             return GitDataResult.Success(emptyArray())
@@ -41,11 +81,12 @@ class GitUtils(
     }
 
     fun getUserStats(
-        startDate: String,
-        endDate: String,
-        settingModel: SettingModel
+        startDate: String?,
+        endDate: String?,
+        settingModel: SettingModel,
+        branchScope: BranchScope = BranchScope.CurrentBranch
     ): GitDataResult<Array<UserStats>> {
-        val command = commandBuilder.detailedCommand(startDate, endDate, settingModel.excludePaths())
+        val command = commandBuilder.detailedCommand(startDate, endDate, settingModel.excludePaths(), branchScope)
         val commandResult = commandRunner.run(basePath, command, GIT_LOG_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         if (commandResult.isEmptyRepositoryLog()) {
             return GitDataResult.Success(emptyArray())
@@ -81,7 +122,18 @@ class GitUtils(
             output.contains("does not have any commits yet", ignoreCase = true)
     }
 
+    private fun parseBranchLines(output: String): List<String> {
+        return output
+            .lineSequence()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+            .sorted()
+            .toList()
+    }
+
     private companion object {
+        private const val GIT_REPOSITORY_TIMEOUT_SECONDS = 10L
         private const val GIT_LOG_TIMEOUT_SECONDS = 60L
     }
 }
