@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- ✨ Support IDE builds through 262
+
 ## [0.9.0] - 2026-06-14
 
 - ✨ Add branch scope filtering for current branch, all branches, and custom ranges
