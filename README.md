@@ -21,7 +21,7 @@ GitStats turns the Git history of your current project into a clear author-level
 
 - **Author-level summaries:** compare commits, added lines, deleted lines, and modified files.
 - **Flexible date ranges:** inspect this week, the last 7 days, this month, or a custom range.
-- **Author filtering:** narrow large repositories down to the contributors you want to review.
+- **Focused filtering:** narrow reports by date range, branch scope, author, and project-relative paths.
 - **Two calculation modes:** use Fast Summary for quick line-based ranking, or Detailed mode when commit counts matter.
 - **Noise control:** exclude generated folders, vendor code, build outputs, or any project-relative paths.
 - **Shareable results:** copy selected rows, copy the full table, or export the visible statistics as CSV.
@@ -30,7 +30,7 @@ GitStats turns the Git history of your current project into a clear author-level
 
 1. Open a project backed by a Git repository in any supported JetBrains IDE.
 2. Open the **Git Stats** tool window.
-3. Choose a date range and optionally filter by author.
+3. Choose a date range, branch scope, author, or paths to focus the report.
 4. Click **Refresh** to calculate the report.
 5. Use the settings action to switch modes or exclude noisy paths such as generated files and build outputs.
 
@@ -40,7 +40,7 @@ GitStats turns the Git history of your current project into a clear author-level
 ## Why GitStats?
 
 - Review Git contribution activity directly in the IDE.
-- Filter statistics by start date and end date.
+- Filter statistics by date range, branch scope, author, and project-relative paths.
 - Compare authors by commits, added lines, deleted lines, and modified files.
 - Use `Fast Summary` mode for a quick ranking view, or `Detailed` mode when commit count is needed.
 - Exclude noisy paths such as generated files, build outputs, or vendor directories.
@@ -60,9 +60,12 @@ GitStats turns the Git history of your current project into a clear author-level
 
 1. Open a Git-backed project in an IntelliJ Platform IDE.
 2. Open the <kbd>Git Stats</kbd> tool window.
-3. Pick the start and end dates for the reporting range.
-4. Click <kbd>Refresh</kbd> to calculate the table.
-5. Use the settings action to switch between `Fast Summary` and `Detailed`, or set excluded paths.
+3. Pick a date range and branch scope for the reporting range.
+4. Optionally use the user or paths filters to focus the report.
+5. Click <kbd>Refresh</kbd> to calculate the table.
+6. Use the settings action to switch between `Fast Summary` and `Detailed`, or set excluded paths.
+
+The toolbar <kbd>Paths</kbd> filter temporarily includes only specific project-relative files or folders in the current report. Excluded paths in settings remove noisy files from every calculation.
 
 ## Roadmap
 

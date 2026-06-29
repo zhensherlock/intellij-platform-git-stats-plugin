@@ -25,7 +25,7 @@
 ## IntelliJ and Gradle Gotchas
 
 - Plugin version, target platform, and supported build range live in `gradle.properties`, not `plugin.xml`.
-- Current compatibility config is `platformVersion=2024.2.6`, `pluginSinceBuild=242`, and `pluginUntilBuild=261.*`.
+- Current compatibility config is `platformVersion=2024.2.6`, `pluginSinceBuild=242`, and `pluginUntilBuild=262.*`.
 - The IntelliJ Gradle plugin derives descriptor version/build range from Gradle config; do not add `<version>` or `<idea-version>` to source `plugin.xml`.
 - Keep bundled `Git4Idea` in `build.gradle.kts` and the `Git4Idea` dependency in `plugin.xml` in sync.
 - Kotlin stdlib bundling is disabled with `kotlin.stdlib.default.dependency=false`.
