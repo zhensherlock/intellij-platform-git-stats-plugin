@@ -29,6 +29,10 @@ dependencies {
     }
 }
 
+changelog {
+    repositoryUrl.set(properties("pluginRepositoryUrl"))
+}
+
 intellijPlatform {
     pluginConfiguration {
         name = "GitStats"

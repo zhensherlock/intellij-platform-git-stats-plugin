@@ -142,7 +142,23 @@ jobs:
         with:
           cache-read-only: true
 
+      - name: Check Release State
+        id: releaseState
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="$(./gradlew properties --console=plain -q | awk -F': ' '/^version:/ { print $2 }')"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          PUBLISHED_TAGS="$(gh api 'repos/{owner}/{repo}/releases?per_page=100' --jq '.[] | select(.draft == false) | .tag_name')"
+
+          if printf '%s\n' "$PUBLISHED_TAGS" | grep -Fxq "v$VERSION"; then
+            echo "create_draft=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "create_draft=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Remove Old Release Drafts
+        if: steps.releaseState.outputs.create_draft == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -151,10 +167,11 @@ jobs:
             | xargs -r -I '{}' gh api -X DELETE repos/{owner}/{repo}/releases/{}
 
       - name: Create Release Draft
+        if: steps.releaseState.outputs.create_draft == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.releaseState.outputs.version }}
         run: |
-          VERSION="$(./gradlew properties --console=plain -q | awk -F': ' '/^version:/ { print $2 }')"
           RELEASE_NOTE="./build/tmp/release_note.txt"
           ./gradlew getChangelog --unreleased --no-header --quiet --console=plain --output-file="$RELEASE_NOTE"
 

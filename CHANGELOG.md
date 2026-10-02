@@ -5,7 +5,7 @@
 ## [Unreleased]
 
 - 🧹 Update Gradle Wrapper and build tooling dependencies
-- 🧹 Refresh GitHub Actions and disk cleanup configuration
+- 🧹 Refresh GitHub Actions, disk cleanup configuration, and release automation
 - 📚 Add contributing guide and project social preview
 
 ## [0.9.1] - 2026-06-29
