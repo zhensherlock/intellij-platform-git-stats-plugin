@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+- 🧹 Update Gradle Wrapper and build tooling dependencies
+- 🧹 Refresh GitHub Actions, disk cleanup configuration, and release automation
+- 📚 Add contributing guide and project social preview
+
 ## [0.9.1] - 2026-06-29
 
 - ✨ Support IDE builds through 262
@@ -80,7 +84,7 @@
 
 - Displays the code statistics table
 
-[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.9.1...HEAD
+[Unreleased]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/v0.9.1...HEAD
 [0.9.1]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.9.0...0.9.1
 [0.9.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/zhensherlock/intellij-platform-git-stats-plugin/compare/0.7.0...0.8.0
