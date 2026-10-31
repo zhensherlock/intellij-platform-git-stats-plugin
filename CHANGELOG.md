@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+- ✨ Support IDE builds through 263 (2026.3)
+- 🧹 Verify plugin compatibility against IntelliJ IDEA 2026.3 EAP
+- 🧹 Update Gradle Wrapper and Git hooks build tooling
+
 ## [0.9.2] - 2026-10-02
 
 - 🧹 Update Gradle Wrapper and build tooling dependencies

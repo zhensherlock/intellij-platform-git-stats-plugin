@@ -47,6 +47,7 @@ intellijPlatform {
         ides {
             create(IntelliJPlatformType.IntellijIdeaCommunity, properties("platformVersion"))
             create(IntelliJPlatformType.IntellijIdea, "2026.1.3")
+            create(IntelliJPlatformType.IntellijIdea, "263.7307.44")
         }
     }
 }
