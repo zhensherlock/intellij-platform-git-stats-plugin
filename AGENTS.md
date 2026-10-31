@@ -2,13 +2,13 @@
 
 ## Commands
 
-- Use `./gradlew` with JDK 21; CI uses Zulu 21 and the wrapper is Gradle 9.5.0.
+- Use `./gradlew` with JDK 21; CI uses Zulu 21 and the wrapper is Gradle 9.8.2.
 - Run the plugin in an IDE sandbox with `./gradlew runIde`.
 - Default local verification is `./gradlew check`.
 - CI runs `./gradlew buildPlugin`, `./gradlew check`, and `./gradlew verifyPlugin` as separate jobs.
 - Run one focused test with `./gradlew test --tests 'com.huayi.intellijplatform.gitstats.MyPluginTest.testExcludePathsAreNormalized' --console=plain`; replace the filter as needed.
 - `./gradlew buildPlugin` writes `build/distributions/GitStats-<version>.zip`.
-- `verifyPlugin` checks IC from `platformVersion` plus IDEA `2026.1.3`; expect it to be slower than `check`.
+- `verifyPlugin` checks IC from `platformVersion`, IDEA `2026.1.3`, and IDEA 2026.3 EAP (`263.7307.44`); expect it to be slower than `check`.
 - IDE sandbox logs are under `.intellijPlatform/sandbox/*/*/log/idea.log`; test sandbox logs use `log-test/idea.log`.
 
 ## Project Shape
@@ -25,7 +25,7 @@
 ## IntelliJ and Gradle Gotchas
 
 - Plugin version, target platform, and supported build range live in `gradle.properties`, not `plugin.xml`.
-- Current compatibility config is `platformVersion=2024.2.6`, `pluginSinceBuild=242`, and `pluginUntilBuild=262.*`.
+- Current compatibility config is `platformVersion=2024.2.6`, `pluginSinceBuild=242`, and `pluginUntilBuild=263.*`.
 - The IntelliJ Gradle plugin derives descriptor version/build range from Gradle config; do not add `<version>` or `<idea-version>` to source `plugin.xml`.
 - Keep bundled `Git4Idea` in `build.gradle.kts` and the `Git4Idea` dependency in `plugin.xml` in sync.
 - Kotlin stdlib bundling is disabled with `kotlin.stdlib.default.dependency=false`.
